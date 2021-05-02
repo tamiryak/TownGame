@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1023548745123",
+    "project_id": "towngame-69dae",
+    "storage_bucket": "towngame-69dae.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1023548745123:android:5405c1cb6940f85d856616",
+        "android_client_info": {
+          "package_name": "com.example.town_game"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1023548745123-lsd8oaa95k8648nm8t3j6iuudg6elm40.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoLOqZ_StCfAbnL_1UrzJfjjJ68Qtq4B4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1023548745123-lsd8oaa95k8648nm8t3j6iuudg6elm40.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
