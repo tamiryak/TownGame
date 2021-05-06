@@ -59,6 +59,7 @@ flutter:
     - lib/assets/nighttoday.gif
     - lib/assets/night.jpg
     - lib/assets/card.jpg
+    - lib/assets/avatars/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

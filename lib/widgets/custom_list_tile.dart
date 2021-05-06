@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CustomListTile extends StatelessWidget {
+class CustomListTile extends StatelessWidget { //tile list of the player list at game page
   CustomListTile({Key key, this.title}) : super(key: key);
 
   String title;

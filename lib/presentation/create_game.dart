@@ -17,29 +17,30 @@ class CreateGame extends StatefulWidget {
 }
 
 final CurrentUser currentUser = getIt();
+//initial values for sliders
 double numKillers = 2;
 double minutes = 5;
-bool isCreating=false;
+bool isCreating = false;
 
 class _CreateGameState extends State<CreateGame> {
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    isCreating=false;
+    isCreating = false;
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        // backgroundColor: Colors.white70,
         leadingWidth: 80,
-
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: FlatButton.icon(
+          //return button
           onPressed: () => Navigator.pop(context),
           icon: Icon(Icons.arrow_back_ios, color: Colors.white70),
           label: Text("  "),
@@ -48,6 +49,7 @@ class _CreateGameState extends State<CreateGame> {
       body: Container(
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
+          //background
           image: DecorationImage(
               fit: BoxFit.fill, image: AssetImage('lib/assets/town.jpg')),
         ),
@@ -55,11 +57,13 @@ class _CreateGameState extends State<CreateGame> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Padding(
+              //title
               padding: const EdgeInsets.only(top: 60),
               child: Text("צור משחק חדש",
                   style: TextStyle(color: Colors.white, fontSize: 40)),
             ),
             Padding(
+              //text field for user name
               padding: const EdgeInsets.only(bottom: 50),
               child: Container(
                 decoration: BoxDecoration(
@@ -86,6 +90,7 @@ class _CreateGameState extends State<CreateGame> {
                       ),
                     ),
                     SizedBox(height: 15),
+                    //number of killers slider
                     Text("כמות רוצחים",
                         style: TextStyle(
                             color: Colors.white,
@@ -97,7 +102,6 @@ class _CreateGameState extends State<CreateGame> {
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.bold)),
-                    //
                     SizedBox(height: 8),
                     Container(
                       width: MediaQuery.of(context).size.width * 0.7,
@@ -106,7 +110,7 @@ class _CreateGameState extends State<CreateGame> {
                         label: numKillers.round().toString(),
                         min: 1.0,
                         max: 4.0,
-                        divisions: 9,
+                        divisions: 3, //number of values you can choose
                         onChanged: (numberPicked) {
                           setState(() {
                             numKillers = numberPicked;
@@ -115,6 +119,8 @@ class _CreateGameState extends State<CreateGame> {
                         value: numKillers,
                       ),
                     ),
+                    //---------------end of slider---------
+                    //--------slider of round time--------
                     SizedBox(height: 15),
                     Text("זמן משחק",
                         style: TextStyle(
@@ -145,30 +151,37 @@ class _CreateGameState extends State<CreateGame> {
                         value: minutes,
                       ),
                     ),
+                    //--------------end of slider round time--------------
                     SizedBox(height: 30),
                     Container(
                       height: 50.0,
                       margin: EdgeInsets.all(10),
                       child: RaisedButton(
+                        // if user press creating game
                         onPressed: () async {
-                          setState(() {
-                            isCreating = true;
-                          });
-                          fbKey.currentState.saveAndValidate();
-                          String playerName =
-                              fbKey.currentState.value['userName'];
-                          currentUser.name = playerName;
-                          currentGame.clockMinutes = minutes.round();
-                          await createGame(minutes, numKillers, playerName);
-
-                          Future.delayed(Duration(seconds: 1), () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => Game()),
-                            );
-                          });
+                          if (!isCreating) {
+                            setState(() {
+                              isCreating = true;
+                            });
+                            if (fbKey.currentState.validate()) {
+                              fbKey.currentState.saveAndValidate();
+                              String playerName =
+                                  fbKey.currentState.value['userName'];
+                              currentUser.name = playerName;
+                              currentGame.clockMinutes = minutes.round();
+                              await createGame(minutes, numKillers, playerName);
+                              setState(() {
+                                isCreating = false;
+                              });
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => Game()),
+                              );
+                            }
+                          }
                         },
                         shape: RoundedRectangleBorder(
+                            //button style
                             borderRadius: BorderRadius.circular(80.0)),
                         padding: EdgeInsets.all(0.0),
                         child: Ink(
@@ -183,12 +196,14 @@ class _CreateGameState extends State<CreateGame> {
                             constraints: BoxConstraints(
                                 maxWidth: 250.0, minHeight: 50.0),
                             alignment: Alignment.center,
-                            child: !isCreating?Text(
-                              "צור משחק",
-                              textAlign: TextAlign.center,
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 15),
-                            ):CircularProgressIndicator(),
+                            child: !isCreating
+                                ? Text(
+                                    "צור משחק",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 15),
+                                  )
+                                : CircularProgressIndicator(),
                           ),
                         ),
                       ),
@@ -206,15 +221,18 @@ class _CreateGameState extends State<CreateGame> {
     );
   }
 
+  //create game on firebase function
   Future<void> createGame(
       double minutes, double numKillers, String playerName) async {
     await FirebaseFirestore.instance.collection('Games').add({
+      //add to games collection
       'roundTime': minutes,
       'numKillers': numKillers,
+      'endGame': false,
       // 'timerStart':false,
       'turn': 0
     }).then((docRef) {
-      currentGame.gameId = docRef.id;
+      currentGame.gameId = docRef.id; //save the id of the game for joining game
       currentGame.numOfKillers = numKillers.round();
     });
     currentGame.isAdmin = true;
@@ -222,16 +240,19 @@ class _CreateGameState extends State<CreateGame> {
     await FirebaseFirestore.instance
         .collection('Games')
         .doc(currentGame.gameId)
-        .update({'gameCode': currentGame.gameId.substring(0, 6)});
+        .update({
+      'gameCode': currentGame.gameId.substring(0, 6)
+    }); //save the game code on firebase
 
-    await FirebaseFirestore.instance
+    await FirebaseFirestore.instance //save the player on the players list
         .collection('Games')
         .doc(currentGame.gameId)
         .collection('Players')
         .add({
       'playerName': playerName,
-      'role':'citizen',
-      'killed':false
+      'role': 'citizen',
+      'killed': false,
+      'avatar': currentUser.avatar
     });
   }
 }
@@ -251,6 +272,10 @@ class NameTextField extends StatelessWidget {
           child: FormBuilderTextField(
             initialValue: currentUser.name,
             inputFormatters: [],
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(context),
+              FormBuilderValidators.max(context, 20),
+            ]),
             decoration: InputDecoration(
               border: OutlineInputBorder(),
               labelText: lableText,

@@ -7,8 +7,9 @@ import 'package:town_game/core/di.dart';
 
 import 'game.dart';
 
-final GlobalKey<FormBuilderState> fbKey = GlobalKey<FormBuilderState>();
-bool gameCodeValid = true;
+final GlobalKey<FormBuilderState> fbKey =
+    GlobalKey<FormBuilderState>(); //form builder key
+bool gameCodeValid = true; //boolean check if user entered valid code
 
 class JoinGame extends StatefulWidget {
   const JoinGame({Key key}) : super(key: key);
@@ -18,7 +19,8 @@ class JoinGame extends StatefulWidget {
 }
 
 final CurrentUser currentUser = getIt();
-bool isJoining=false;
+bool isJoining = false; //change the state of joining
+bool snackBar = false;
 
 class _JoinGameState extends State<JoinGame> {
   @override
@@ -27,12 +29,13 @@ class _JoinGameState extends State<JoinGame> {
     super.initState();
     isJoining = false;
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        // backgroundColor: Colors.white70,
+        //back button
         leadingWidth: 80,
 
         backgroundColor: Colors.transparent,
@@ -45,6 +48,7 @@ class _JoinGameState extends State<JoinGame> {
       ),
       resizeToAvoidBottomInset: true,
       body: Container(
+        //background
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -55,40 +59,60 @@ class _JoinGameState extends State<JoinGame> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              snackBar
+                  ? SnackBar(content: Text("!הקוד שהזנת שגוי"))
+                  : Container(), //snackbar if game code not valid
               Padding(
                 padding: const EdgeInsets.only(top: 60),
-                child: !isJoining?Text("הצטרף למשחק",
-                    style: TextStyle(color: Colors.white, fontSize: 40)):CircularProgressIndicator(),
+                child: !isJoining
+                    ? Text("הצטרף למשחק",
+                        style: TextStyle(color: Colors.white, fontSize: 40))
+                    : CircularProgressIndicator(),
               ),
               Column(
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 20.0),
-                    child: TextFieldsEditor(),
+                    child: TextFieldsEditor(), //showing the text fields
                   ),
                   Container(
                     height: 50.0,
                     margin: EdgeInsets.all(10),
                     child: RaisedButton(
+                      //button for entering to game
                       onPressed: () async {
-                        isJoining=true;
-                        fbKey.currentState.saveAndValidate();
-                        String playerName =
-                            fbKey.currentState.value['guestName'];
-                        String gameCode = fbKey.currentState.value['gameCode'];
-                        currentUser.name = playerName;
-                        currentGame.isAdmin = false;
-                        await joinGame(playerName, gameCode);
-                        gameCodeValid
-                            ? Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => Game()),
-                              )
-                            : SnackBar(
-                                content: Text('הקוד שהזנת שגוי'),
-                              );
+                        if (isJoining == false) {
+                          //if user already pressed the button (double entering prevention)
+                          snackBar = false;
+                          isJoining = true;
+                          fbKey.currentState.saveAndValidate();
+                          String playerName = fbKey.currentState.value[
+                              'guestName']; //saving the player name on var
+                          String gameCode = fbKey.currentState
+                              .value['gameCode']; //saving the game code on var
+                          currentUser.name =
+                              playerName; //saving the name for reuse
+                          currentGame.isAdmin = false;
+                          await joinGame(
+                              playerName, gameCode); //join the game on firebase
+                          gameCodeValid
+                              ? Navigator.push(
+                                  //if code valid - moving to game page (list of all players)
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          Game()), //moving to game (player list page)
+                                )
+                              : isJoining = false;
+                          if (isJoining == false) snackBar = true;
+                          setState(() {
+                            isJoining = isJoining ? true : false;
+                            snackBar = snackBar ? true : false;
+                          });
+                        }
                       },
                       shape: RoundedRectangleBorder(
+                          //button style
                           borderRadius: BorderRadius.circular(80.0)),
                       padding: EdgeInsets.all(0.0),
                       child: Ink(
@@ -124,15 +148,15 @@ class _JoinGameState extends State<JoinGame> {
     );
   }
 
+  //join game on firebase
   joinGame(String playerName, String gameCode) async {
-    
     await FirebaseFirestore.instance
         .collection('Games')
-        .where('gameCode', isEqualTo: gameCode)
+        .where('gameCode', isEqualTo: gameCode) //searching for the right game
         .get()
         .then((snapshot) {
       if (snapshot.docs.length > 0) {
-        currentGame.gameId = snapshot.docs[0].id;
+        currentGame.gameId = snapshot.docs[0].id; //get the id of it
         setState(() {
           gameCodeValid = true;
         });
@@ -142,23 +166,27 @@ class _JoinGameState extends State<JoinGame> {
         });
       }
     });
-    if (gameCodeValid)
+    if (gameCodeValid) //if the game exist - creating the player in list of players in game
       await FirebaseFirestore.instance
           .collection('Games')
           .doc(currentGame.gameId)
           .collection('Players')
           .add({
         'playerName': playerName,
-        'role':'citizen',
-        'killed':false
+        'role': 'citizen',
+        'killed': false,
+        'avatar': currentUser.avatar
       });
 
-        await FirebaseFirestore.instance
-          .collection('Games')
-          .doc(currentGame.gameId)
-          .get().then((value) => currentGame.clockMinutes= (value['roundTime']).round());
-
-
+    await FirebaseFirestore
+        .instance //saving the round time and the number of killer player 1 choose
+        .collection('Games')
+        .doc(currentGame.gameId)
+        .get()
+        .then((value) {
+      currentGame.clockMinutes = (value['roundTime']).round();
+      currentGame.numOfKillers = (value['numKillers']).round();
+    });
   }
 }
 
@@ -220,15 +248,13 @@ class EventTextField extends StatelessWidget {
       children: [
         Expanded(
           child: FormBuilderTextField(
-            initialValue: currentUser.name,
-            inputFormatters: [
-              if (digitOnly) FilteringTextInputFormatter.digitsOnly
-              // else
-              //   FilteringTextInputFormatter.allow(
-              //     RegExp("[a-zA-Z0-9]"),
-              //   ),
-              // LengthLimitingTextInputFormatter(4),
-            ],
+            initialValue: (this.name == "guestName")
+                ? currentUser.name
+                : "", //if username was saved
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(context),
+              FormBuilderValidators.max(context, 20),
+            ]),
             decoration: InputDecoration(
               border: OutlineInputBorder(),
               labelText: lableText,

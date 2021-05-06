@@ -1,15 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:town_game/presentation/create_game.dart';
 import 'package:town_game/presentation/join_game.dart';
+import 'package:town_game/presentation/settings.dart';
 import 'package:town_game/core/di.dart' as di;
+
+import 'core/current_user.dart';
+import 'core/di.dart';
 
 SharedPreferences prefs;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  prefs = await SharedPreferences.getInstance();
+  prefs = await SharedPreferences.getInstance(); //AVATAR - NAME - SOUND Preferences
   await Firebase.initializeApp();
   di.setup();
   runApp(MyApp());
@@ -20,6 +25,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // themeMode: ThemeMode.dark,
       home: Town(),
     );
   }
@@ -32,7 +38,8 @@ class Town extends StatefulWidget {
   _TownState createState() => _TownState();
 }
 
-bool soundOn = prefs.getBool('SOUND') ?? false;
+bool soundOn = prefs.getBool('SOUND') ?? true; //check user preferences sound on/of
+final CurrentUser currentUser = getIt();
 
 class _TownState extends State<Town> {
   @override
@@ -40,7 +47,9 @@ class _TownState extends State<Town> {
     // TODO: implement initState
     super.initState();
     FlameAudio.bgm.initialize();
-    if (soundOn) FlameAudio.bgm.play('background_music.mp3');
+    if (soundOn) FlameAudio.bgm.play('background_music.mp3'); //initizalize the sound sfx
+    currentUser.name = prefs.getString('NAME')??""; //get the name and avatar of user
+    currentUser.avatar=prefs.getInt('AVATAR');
   }
 
   @override
@@ -54,35 +63,25 @@ class _TownState extends State<Town> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        // backgroundColor: Colors.white70,
-        leadingWidth: 80,
-
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: FlatButton.icon(
-          onPressed: () {
-            setState(() {
-              soundOn = !soundOn;
-              if (!soundOn) {
-                FlameAudio.bgm.stop();
-                prefs.setBool('SOUND', false);
-              } else {
-                FlameAudio.bgm.play('background_music.mp3');
-                prefs.setBool('SOUND', true);
-              }
-            });
-            print(soundOn);
-          },
-          icon: soundOn
-              ? Icon(Icons.volume_up, color: Colors.white70)
-              : Icon(Icons.volume_off, color: Colors.white70),
-          label: Text("  "),
-        ),
-      ),
-      body: Container(
+      appBar: AppBar( //app bar style
+          leadingWidth: 80,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: IconButton( //setting button on top
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SettingsApp(sound: soundOn,name:currentUser.name)), //moving to setting page
+                  );
+                },
+                icon: Icon(Icons.settings)),
+          )),
+      body: Container( // body of scaffold - two buttons and background configuration
         width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
+        decoration: BoxDecoration( //background config
           image: DecorationImage(
               fit: BoxFit.fill,
               image: AssetImage('lib/assets/background_town.jpg')),
@@ -93,14 +92,14 @@ class _TownState extends State<Town> {
             Container(
               height: 50.0,
               margin: EdgeInsets.all(10),
-              child: RaisedButton(
+              child: RaisedButton( //first button - moving to create game page
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => CreateGame()),
                   );
                 },
-                shape: RoundedRectangleBorder(
+                shape: RoundedRectangleBorder( //style of first button
                     borderRadius: BorderRadius.circular(80.0)),
                 padding: EdgeInsets.all(0.0),
                 child: Ink(
@@ -127,14 +126,14 @@ class _TownState extends State<Town> {
             Container(
               height: 50.0,
               margin: EdgeInsets.all(10),
-              child: RaisedButton(
+              child: RaisedButton( // second button - join game, moving to join game page
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => JoinGame()),
                   );
                 },
-                shape: RoundedRectangleBorder(
+                shape: RoundedRectangleBorder( //join game button style
                     borderRadius: BorderRadius.circular(80.0)),
                 padding: EdgeInsets.all(0.0),
                 child: Ink(
