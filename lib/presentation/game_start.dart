@@ -16,6 +16,8 @@ bool copIsDead = false;
 bool doctorIsDead = false;
 int numOfKillersLeft;
 int numOfPlayersLeft;
+final CurrentUser currentUser = getIt();
+final CurrentGame currentGame = getIt();
 
 class GameStart extends StatefulWidget {
   GameStart({Key key}) : super(key: key);
@@ -24,10 +26,8 @@ class GameStart extends StatefulWidget {
   _GameStartState createState() => _GameStartState();
 }
 
-final CurrentGame currentGame = getIt();
-final CurrentUser currentUser = getIt();
 CollectionReference players;
-List<String> shape = ['♦','♣','♥','♠'];
+List<String> shape = ['♦', '♣', '♥', '♠'];
 
 class _GameStartState extends State<GameStart> {
   @override
@@ -45,12 +45,13 @@ class _GameStartState extends State<GameStart> {
 // this build moving between the frames - this actualy responsible for the game loop
   @override
   Widget build(BuildContext context) {
-    Future<bool> _onWillPop() async { //dialog for exit the game
+    Future<bool> _onWillPop() async {
+      //dialog for exit the game
       return (await showDialog(
             context: context,
             builder: (context) => new AlertDialog(
               title: new Text('Are you sure?'),
-              content: new Text('Do you want to exit an App'),
+              content: new Text('Do you want to exit from game?'),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
@@ -80,34 +81,40 @@ class _GameStartState extends State<GameStart> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();
             } else {
-              currentUser.role = snapshot.data.docs[0]['role']; //the players gets their roles that was drawen for them
+              currentUser.role = snapshot.data.docs[0][
+                  'role']; //the players gets their roles that was drawen for them
               return Scaffold(
                   extendBodyBehindAppBar: true,
                   appBar: AppBar(
                       actions: [
                         Container(
-                          child: currentGame.isAdmin?ElevatedButton( //end game button
-                              child: Text("End Game".toUpperCase(),
-                                  style: TextStyle(fontSize: 14)),
-                              style: ButtonStyle(
-                                  foregroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          Colors.white),
-                                  backgroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          Colors.red),
-                                  shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.zero,
-                                          side:
-                                              BorderSide(color: Colors.red)))),
-                              onPressed: () async {
-                                await FirebaseFirestore.instance
-                                    .collection('Games')
-                                    .doc(currentGame.gameId)
-                                    .update({'endGame': true}); //ending the game on firebase
-                              }):Container(),
+                          child: currentGame.isAdmin
+                              ? ElevatedButton(
+                                  //end game button
+                                  child: Text("End Game".toUpperCase(),
+                                      style: TextStyle(fontSize: 14)),
+                                  style: ButtonStyle(
+                                      foregroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.white),
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.red),
+                                      shape: MaterialStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.zero,
+                                              side: BorderSide(
+                                                  color: Colors.red)))),
+                                  onPressed: () async {
+                                    await FirebaseFirestore.instance
+                                        .collection('Games')
+                                        .doc(currentGame.gameId)
+                                        .update({
+                                      'endGame': true
+                                    }); //ending the game on firebase
+                                  })
+                              : Container(),
                         )
                       ],
                       //appbar style
@@ -120,7 +127,8 @@ class _GameStartState extends State<GameStart> {
                             height: 50,
                             width: 50,
                             child: FlipCard(
-                              back: Container( //card of the player
+                              back: Container(
+                                //card of the player
                                 width: 10,
                                 height: 10,
                                 decoration: BoxDecoration(
@@ -129,10 +137,12 @@ class _GameStartState extends State<GameStart> {
                                   color: Colors.white,
                                 ),
                                 child: Center(
-                                  child: Text( 
+                                  child: Text(
                                       currentUser.role == null
                                           ? ""
-                                          : currentUser.role + '\n' +(shape..shuffle()).first,
+                                          : currentUser.role +
+                                              '\n' +
+                                              (shape..shuffle()).first,
                                       style: TextStyle(
                                           color: Colors.red, fontSize: 16),
                                       textAlign: TextAlign.center),
@@ -143,7 +153,8 @@ class _GameStartState extends State<GameStart> {
                               flipOnTouch: true,
                             )),
                       )),
-                  body: StreamBuilder( //stream builder of the game turns
+                  body: StreamBuilder(
+                          //stream builder of the game turns
                           stream: FirebaseFirestore.instance
                               .collection("Games")
                               .doc(currentGame.gameId)
@@ -165,8 +176,10 @@ class _GameStartState extends State<GameStart> {
                                       'An error occurred! please try again'),
                                 );
                               } else {
-                                var endGame = dataSnapshot.data['endGame']; //check if endgame situation
-                                var turn = dataSnapshot.data['turn']; //var of the current turn 
+                                var endGame = dataSnapshot.data[
+                                    'endGame']; //check if endgame situation
+                                var turn = dataSnapshot
+                                    .data['turn']; //var of the current turn
                                 //check end if some group won
                                 if ((numOfKillersLeft == 0) ||
                                     (endGame == true)) turn = 7;
@@ -203,7 +216,7 @@ class _GameStartState extends State<GameStart> {
                                             builder: (BuildContext context) =>
                                                 Town()));
                                     break;
-                                    //killers won
+                                  //killers won
                                   case 6:
                                     Navigator.pushReplacement(
                                         context,
@@ -211,7 +224,7 @@ class _GameStartState extends State<GameStart> {
                                             builder: (BuildContext context) =>
                                                 Town()));
                                     break;
-                                    //citizens won
+                                  //citizens won
                                   case 7:
                                     Navigator.pushReplacement(
                                         context,
@@ -219,7 +232,7 @@ class _GameStartState extends State<GameStart> {
                                             builder: (BuildContext context) =>
                                                 Town()));
                                     break;
-                                    //------------------------------
+                                  //------------------------------
                                 }
                               }
                             }
@@ -239,7 +252,6 @@ class _GameStartState extends State<GameStart> {
   }
 }
 
-
 //--------------day situation -----------------
 
 class Day extends StatefulWidget {
@@ -252,17 +264,20 @@ class Day extends StatefulWidget {
 class _DayState extends State<Day> with TickerProviderStateMixin {
   AssetImage image;
   AnimationController _controller;
-  int levelClock = (currentGame.clockMinutes) * 60; //initialize the timer round time
+  int levelClock =
+      (currentGame.clockMinutes) * 60; //initialize the timer round time
   bool isTimer = false;
   bool timerFinish = false;
-
+  final CurrentUser currentUser = getIt();
   @override
   void initState() {
     super.initState();
-    image = AssetImage("lib/assets/nighttoday.gif"); //changing from night to day
+    image =
+        AssetImage("lib/assets/nighttoday.gif"); //changing from night to day
     doctorSucceed = false;
 
-    Future.delayed(Duration(seconds: 4), () { //delaying the show of the timer animation
+    Future.delayed(Duration(seconds: 4), () {
+      //delaying the show of the timer animation
       _controller = AnimationController(
           vsync: this,
           duration: Duration(
@@ -308,13 +323,16 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
           child: isTimer
               ? Countdown(
                   animation: StepTween(
-                    begin: levelClock, // THIS IS A USER ENTERED NUMBER for timer
+                    begin:
+                        levelClock, // THIS IS A USER ENTERED NUMBER for timer
                     end: 0,
                   ).animate(_controller),
                 )
               : Container(),
         ),
-        isTimer && currentGame.isAdmin //show the players only if admin (admin is able to choose after vote)
+        isTimer &&
+                currentGame
+                    .isAdmin //show the players only if admin (admin is able to choose after vote)
             ? Positioned(
                 bottom: MediaQuery.of(context).size.height * 0.10,
                 child: StreamBuilder(
@@ -336,29 +354,28 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
                             child: Text('An error occurred! please try again'),
                           );
                         } else {
-                          var playersAlive = dataSnapshot.data.docs; //all players
+                          var playersAlive =
+                              dataSnapshot.data.docs; //all players
                           return new CircleList(
                               origin: Offset(0, 0),
                               children: playersAlive
                                   .map<Widget>((DocumentSnapshot player) {
-                                return player['killed'] == false //if player was killed - avatar with red x
-                                    ? new Container( //else - pressable avatar
-                                        width:
-                                            (MediaQuery.of(context).size.width / //changing the size of the avatar by amount of players
-                                                    playersAlive.length) +
-                                                40,
-                                        height:
-                                            (MediaQuery.of(context).size.width /
-                                                    playersAlive.length) +
-                                                40,
-                                        child: InkWell( //on player pressed - admin press on someone (kill the player)
+                                return player['killed'] ==
+                                        false //if player was killed - avatar with red x
+                                    ? new Container(
+                                        //else - pressable avatar
+                                        width: 60,
+                                        height: 60,
+                                        child: InkWell(
+                                          //on player pressed - admin press on someone (kill the player)
                                           onTap: () async {
                                             await FirebaseFirestore.instance
                                                 .collection('Games')
                                                 .doc(currentGame.gameId)
                                                 .collection('Players')
                                                 .where('playerName',
-                                                    isEqualTo: player['playerName'])
+                                                    isEqualTo:
+                                                        player['playerName'])
                                                 .limit(1)
                                                 .get()
                                                 .then((value) {
@@ -373,7 +390,8 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
                                             });
                                             changeturn(); //moving to night mode
                                           },
-                                          child: ClipRRect( //avatar of player 
+                                          child: ClipRRect(
+                                            //avatar of player
                                             borderRadius:
                                                 BorderRadius.circular(100),
                                             child: Container(
@@ -401,7 +419,8 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
                                                                     .bold)))),
                                           ),
                                         ))
-                                    : KilledCircle( //if the player was killed - red x circle container
+                                    : KilledCircle(
+                                        //if the player was killed - red x circle container
                                         name: player['playerName'],
                                         avatar: player['avatar'],
                                         numOfP: playersAlive.length,
@@ -443,7 +462,6 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
   }
 }
 
-
 //killed circle for user that is dead already
 class KilledCircle extends StatelessWidget {
   const KilledCircle({
@@ -456,12 +474,11 @@ class KilledCircle extends StatelessWidget {
   final int avatar;
   final int numOfP;
   @override
-
-  //building the style - avatar - red x on the avatar 
+  //building the style - avatar - red x on the avatar
   Widget build(BuildContext context) {
     return new Container(
-        width: (MediaQuery.of(context).size.width / numOfP) + 40,
-        height: (MediaQuery.of(context).size.width / numOfP) + 40,
+        width: 60,
+        height: 60,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -491,9 +508,7 @@ class KilledCircle extends StatelessWidget {
   }
 }
 
-
 //-------------------------------killer decision mode-----------------
-
 
 class Kill extends StatefulWidget {
   const Kill({Key key}) : super(key: key);
@@ -506,7 +521,7 @@ class _KillState extends State<Kill> {
   AssetImage image;
   bool isKiller;
   String killerText = '';
-
+  final CurrentUser currentUser = getIt();
   @override
   void initState() {
     super.initState();
@@ -517,12 +532,10 @@ class _KillState extends State<Kill> {
         killerText = 'שלום רוצח\n ?את מי תרצה לרצוח';
       });
     });
-    //print('${widget.asset} initState');
   }
 
   @override
   void dispose() {
-    //print('${widget.asset} dispose');
     image.evict();
     super.dispose();
   }
@@ -550,7 +563,8 @@ class _KillState extends State<Kill> {
         isKiller
             ? Positioned(
                 bottom: MediaQuery.of(context).size.height * 0.10,
-                child: StreamBuilder( //stream builder for all the players in game
+                child: StreamBuilder(
+                    //stream builder for all the players in game
                     stream: FirebaseFirestore.instance
                         .collection("Games")
                         .doc(currentGame.gameId)
@@ -569,73 +583,69 @@ class _KillState extends State<Kill> {
                           );
                         } else {
                           var playersAlive = dataSnapshot.data.docs;
-                          return new CircleList( //creating the circle list of all the players
+                          return new CircleList(
+                              //creating the circle list of all the players
                               origin: Offset(0, 0),
                               children: playersAlive
                                   .map<Widget>((DocumentSnapshot player) {
-                                if (player['playerName'] != currentUser.name) { 
-                                  player['killed'] == false
-                                      ? new Container(
-                                          width: (MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  playersAlive.length) +
-                                              40,
-                                          height: (MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  playersAlive.length) +
-                                              40,
-                                          child: InkWell(
-                                            onTap: () async { //on killer pick a player
-                                              await FirebaseFirestore.instance
-                                                  .collection('Games')
-                                                  .doc(currentGame.gameId)
-                                                  .update({
-                                                'killerPick':
-                                                    player['playerName'] //saving the killer pick
-                                              });
-                                              await FirebaseFirestore.instance
-                                                  .collection('Games')
-                                                  .doc(currentGame.gameId)
-                                                  .update({'turn': 3}); //moving to phase 3
-                                            },
-                                            child: ClipRRect( //creating the avatar of each player
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              child: Container(
-                                                  decoration: (player['avatar'] !=
-                                                          null)
-                                                      ? new BoxDecoration(
-                                                          color: Colors.brown,
-                                                          image:
-                                                              new DecorationImage(
-                                                            image: new AssetImage(
-                                                                "lib/assets/avatars/${player['avatar'] + 1}.png"),
-                                                            fit: BoxFit.fill,
-                                                          ))
-                                                      : BoxDecoration(
-                                                          color: Colors.brown),
-                                                  child: Center(
-                                                      child: Text(
-                                                          player['playerName'],
-                                                          style: TextStyle(
-                                                              backgroundColor:
-                                                                  Colors.black,
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)))),
-                                            ),
-                                          ))
-                                      : KilledCircle(
-                                          name: player['playerName'],
-                                          avatar: player['avatar'],
-                                          numOfP: playersAlive.length,
-                                        );
-                                }
-                              }).toList());
+                                if (player['playerName'] != currentUser.name) {
+                                    return
+                                player['killed'] == false
+                                    ? new Container(
+                                        width: 60,
+                                        height: 60,
+                                        child: InkWell(
+                                          onTap: () async {
+                                            //on killer pick a player
+                                            await FirebaseFirestore.instance
+                                                .collection('Games')
+                                                .doc(currentGame.gameId)
+                                                .update({
+                                              'killerPick': player[
+                                                  'playerName'] //saving the killer pick
+                                            });
+                                            await FirebaseFirestore.instance
+                                                .collection('Games')
+                                                .doc(currentGame.gameId)
+                                                .update({
+                                              'turn': 3
+                                            }); //moving to phase 3
+                                          },
+                                          child: ClipRRect(
+                                            //creating the avatar of each player
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                            child: Container(
+                                                decoration: (player['avatar'] !=
+                                                        null)
+                                                    ? new BoxDecoration(
+                                                        color: Colors.brown,
+                                                        image:
+                                                            new DecorationImage(
+                                                          image: new AssetImage(
+                                                              "lib/assets/avatars/${player['avatar'] + 1}.png"),
+                                                          fit: BoxFit.fill,
+                                                        ))
+                                                    : BoxDecoration(
+                                                        color: Colors.brown),
+                                                child: Center(
+                                                    child: Text(
+                                                        player['playerName'],
+                                                        style: TextStyle(
+                                                            backgroundColor:
+                                                                Colors.black,
+                                                            color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold)))),
+                                          ),
+                                        ))
+                                    : KilledCircle(
+                                        name: player['playerName'],
+                                        avatar: player['avatar'],
+                                        numOfP: playersAlive.length,
+                                      );
+                              }}).toList());
                         }
                       }
                     }))
@@ -644,7 +654,6 @@ class _KillState extends State<Kill> {
     );
   }
 }
-
 
 //-------------------------heal - doctor needs to pick who to save-------------
 
@@ -660,6 +669,7 @@ bool doctorSucceed = false;
 String killerPick;
 
 class _HealState extends State<Heal> {
+  final CurrentUser currentUser = getIt();
   @override
   void initState() {
     // TODO: implement initState
@@ -670,7 +680,8 @@ class _HealState extends State<Heal> {
         .collection('Games')
         .doc(currentGame.gameId)
         .get()
-        .then((value) => killerPick = value['killerPick']); //getting the killer pick
+        .then((value) =>
+            killerPick = value['killerPick']); //getting the killer pick
   }
 
   @override
@@ -702,7 +713,8 @@ class _HealState extends State<Heal> {
         isDoctor
             ? Positioned(
                 bottom: MediaQuery.of(context).size.height * 0.10,
-                child: StreamBuilder( //Stream of all players in game
+                child: StreamBuilder(
+                    //Stream of all players in game
                     stream: FirebaseFirestore.instance
                         .collection("Games")
                         .doc(currentGame.gameId)
@@ -724,20 +736,18 @@ class _HealState extends State<Heal> {
                           return new CircleList(
                               origin: Offset(0, 0),
                               children: playersAlive
-                                  .map<Widget>((DocumentSnapshot player) { //creating the circle list
+                                  .map<Widget>((DocumentSnapshot player) {
+                                    return
+                                //creating the circle list
                                 player['killed'] == false
                                     ? new Container(
-                                        width:
-                                            (MediaQuery.of(context).size.width /
-                                                    playersAlive.length) +
-                                                40,
-                                        height:
-                                            (MediaQuery.of(context).size.width /
-                                                    playersAlive.length) +
-                                                40,
+                                        width: 60,
+                                        height: 60,
                                         child: InkWell(
-                                          onTap: () async { //if doctor pick player
-                                            await FirebaseFirestore.instance //check if player was killed by the killer
+                                          onTap: () async {
+                                            //if doctor pick player
+                                            await FirebaseFirestore
+                                                .instance //check if player was killed by the killer
                                                 .collection('Games')
                                                 .doc(currentGame.gameId)
                                                 .get()
@@ -752,7 +762,8 @@ class _HealState extends State<Heal> {
                                               }
                                             });
 
-                                            await FirebaseFirestore.instance //save rather doctor succeed or not
+                                            await FirebaseFirestore
+                                                .instance //save rather doctor succeed or not
                                                 .collection('Games')
                                                 .doc(currentGame.gameId)
                                                 .update({
@@ -760,7 +771,8 @@ class _HealState extends State<Heal> {
                                               'doctorSucceed': doctorSucceed
                                             });
                                           },
-                                          child: ClipRRect( //each player gets avatar
+                                          child: ClipRRect(
+                                            //each player gets avatar
                                             borderRadius:
                                                 BorderRadius.circular(100),
                                             child: Container(
@@ -803,9 +815,7 @@ class _HealState extends State<Heal> {
   }
 }
 
-
 //--------------------investigate mode - cop is picking player to ask--------------
-
 
 class Investigate extends StatefulWidget {
   const Investigate({Key key}) : super(key: key);
@@ -819,6 +829,7 @@ bool copRight;
 bool picked;
 
 class _InvestigateState extends State<Investigate> {
+  final CurrentUser currentUser = getIt();
   @override
   void initState() {
     // TODO: implement initState
@@ -859,7 +870,8 @@ class _InvestigateState extends State<Investigate> {
             ? !picked
                 ? Positioned(
                     bottom: MediaQuery.of(context).size.height * 0.10,
-                    child: StreamBuilder( //stream of all players in game
+                    child: StreamBuilder(
+                        //stream of all players in game
                         stream: FirebaseFirestore.instance
                             .collection("Games")
                             .doc(currentGame.gameId)
@@ -879,28 +891,21 @@ class _InvestigateState extends State<Investigate> {
                               );
                             } else {
                               var playersAlive = dataSnapshot.data.docs;
-                              int i = -1;
                               return new CircleList(
                                   origin: Offset(0, 0),
                                   children: playersAlive
-                                      .map<Widget>((DocumentSnapshot player) { //creating the circle list for each player
+                                      .map<Widget>((DocumentSnapshot player) {
+                                    //creating the circle list for each player
                                     if (player['playerName'] !=
                                         currentUser.name) {
-                                      i++;
+                                          return
                                       player['killed'] == false
                                           ? new Container(
-                                              width: (MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      playersAlive.length) +
-                                                  40,
-                                              height: (MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      playersAlive.length) +
-                                                  40,
+                                              width: 60,
+                                              height: 60,
                                               child: InkWell(
-                                                onTap: () async { //if cop pick player
+                                                onTap: () async {
+                                                  //if cop pick player
                                                   await FirebaseFirestore //check on firebase if cop was right
                                                       .instance
                                                       .collection('Games')
@@ -917,7 +922,8 @@ class _InvestigateState extends State<Investigate> {
                                                                 'killer')
                                                               copRight = true
                                                           });
-                                                  if (!doctorSucceed) { //check if doctor was succeed or not
+                                                  if (!doctorSucceed) {
+                                                    //check if doctor was succeed or not
                                                     await FirebaseFirestore
                                                         .instance
                                                         .collection('Games')
@@ -928,7 +934,8 @@ class _InvestigateState extends State<Investigate> {
                                                                 killerPick)
                                                         .limit(1)
                                                         .get()
-                                                        .then((value) { //if doctor not succeed - kill the player on firebase
+                                                        .then((value) {
+                                                      //if doctor not succeed - kill the player on firebase
                                                       (value.docs[0])
                                                           .reference
                                                           .update(
@@ -1014,7 +1021,8 @@ class _InvestigateState extends State<Investigate> {
                             }
                           }
                         }))
-                : Positioned( //right or wrong text for the cop
+                : Positioned(
+                    //right or wrong text for the cop
                     bottom: MediaQuery.of(context).size.height * 0.3,
                     child: copRight
                         ? Text("צדקת",

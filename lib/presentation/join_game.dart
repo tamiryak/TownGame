@@ -59,9 +59,6 @@ class _JoinGameState extends State<JoinGame> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              snackBar
-                  ? SnackBar(content: Text("!הקוד שהזנת שגוי"))
-                  : Container(), //snackbar if game code not valid
               Padding(
                 padding: const EdgeInsets.only(top: 60),
                 child: !isJoining
@@ -81,10 +78,7 @@ class _JoinGameState extends State<JoinGame> {
                     child: RaisedButton(
                       //button for entering to game
                       onPressed: () async {
-                        if (isJoining == false) {
-                          //if user already pressed the button (double entering prevention)
-                          snackBar = false;
-                          isJoining = true;
+                          if(fbKey.currentState.validate()){
                           fbKey.currentState.saveAndValidate();
                           String playerName = fbKey.currentState.value[
                               'guestName']; //saving the player name on var
@@ -104,11 +98,8 @@ class _JoinGameState extends State<JoinGame> {
                                           Game()), //moving to game (player list page)
                                 )
                               : isJoining = false;
-                          if (isJoining == false) snackBar = true;
-                          setState(() {
-                            isJoining = isJoining ? true : false;
-                            snackBar = snackBar ? true : false;
-                          });
+
+                              
                         }
                       },
                       shape: RoundedRectangleBorder(
