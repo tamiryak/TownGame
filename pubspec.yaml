@@ -27,12 +27,12 @@ dependencies:
   cupertino_icons: ^1.0.2
   firebase_core: ^1.0.4
   cloud_firestore: ^1.0.6
-  provider: ^5.0.0
   flutter_form_builder: ^6.0.0
   shared_preferences: ^2.0.5
   flame_audio: ^0.1.0-rc5
   get_it: ^6.1.1
   circle_list: ^1.0.4
+  audioplayers: ^0.18.3
   flip_card: ^0.5.0
   
 dev_dependencies:
@@ -59,6 +59,11 @@ flutter:
     - lib/assets/nighttoday.gif
     - lib/assets/night.jpg
     - lib/assets/card.jpg
+    - assets/sound/night.mp3
+    - assets/sound/morning.mp3
+    - assets/sound/doctor.m4a
+    - assets/sound/killer.m4a
+    - assets/sound/cop.m4a
     - lib/assets/avatars/
 
   # An image asset can refer to one or more resolution-specific "variants", see

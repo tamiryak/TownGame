@@ -28,6 +28,7 @@ class _GameState extends State<Game> {
     super.initState();
     isStarting = false;
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,7 +38,8 @@ class _GameState extends State<Game> {
         leadingWidth: 80,
         title: Padding(
           padding: const EdgeInsets.only(top: 30.0),
-          child: Text( //title
+          child: Text(
+            //title
             "רשימת משתתפים",
             style: TextStyle(fontSize: 30),
           ),
@@ -45,7 +47,8 @@ class _GameState extends State<Game> {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: FlatButton.icon( //return button
+        leading: FlatButton.icon(
+          //return button
           onPressed: () => Navigator.pop(context),
           icon: Icon(Icons.arrow_back_ios, color: Colors.white70),
           label: Text("  "),
@@ -53,38 +56,41 @@ class _GameState extends State<Game> {
       ),
       body: Column(
         children: [
-          StreamBuilder( //stream builder for the current game 
+          StreamBuilder(
+                  //stream builder for the current game
                   stream: FirebaseFirestore.instance
                       .collection("Games")
                       .doc(currentGame.gameId)
                       .snapshots(),
                   builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container();
+                    } else {
+                      if (snapshot.error != null) {
                         return Container();
                       } else {
-                        if (snapshot.error != null) {
+                        var turn =
+                            snapshot.data['turn']; //return the turn of the game
+                        if (turn == 1) {
+                          // if player 1 start the game, the turn will change to 1 and the we navigate to the game loop page
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            Navigator.pushReplacement(context,
+                                MaterialPageRoute(builder: (_) => GameStart()));
+                          });
+                        } else
                           return Container();
-                        } else {
-                          var turn = snapshot.data['turn']; //return the turn of the game
-                          if (turn == 1) { // if player 1 start the game, the turn will change to 1 and the we navigate to the game loop page
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => GameStart()), //game loop page
-                            );
-                          } else
-                            return Container();
-                        }
                       }
-                    
+                    }
                   }) ??
               Container(),
           Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
-              image: DecorationImage( //background
-                  fit: BoxFit.fill, image: AssetImage('lib/assets/town.jpg')),
+              image: DecorationImage(
+                  //background
+                  fit: BoxFit.fill,
+                  image: AssetImage('lib/assets/town.jpg')),
             ),
             child: Padding(
               padding: const EdgeInsets.only(top: 70.0),
@@ -100,7 +106,8 @@ class _GameState extends State<Game> {
                         borderRadius: BorderRadius.all(Radius.circular(20))),
                     width: MediaQuery.of(context).size.width * 0.8,
                     height: MediaQuery.of(context).size.height * 0.7,
-                    child: StreamBuilder( //stream builder for all the players registered to the game
+                    child: StreamBuilder(
+                      //stream builder for all the players registered to the game
                       stream: FirebaseFirestore.instance
                           .collection("Games")
                           .doc(currentGame.gameId)
@@ -119,13 +126,15 @@ class _GameState extends State<Game> {
                                   Text('An error occurred! please try again'),
                             );
                           } else {
-                            var players = dataSnapshot.data.docs; //get the players list
-                            
+                            var players =
+                                dataSnapshot.data.docs; //get the players list
+
                             numOfPlayers = players.length;
-                            currentGame.numOfPlayers=numOfPlayers;
+                            currentGame.numOfPlayers = numOfPlayers;
                             return new ListView(
                                 children: players
-                                    .map<Widget>((DocumentSnapshot player) { //creating custom list tile for each player
+                                    .map<Widget>((DocumentSnapshot player) {
+                              //creating custom list tile for each player
                               return new CustomListTile(
                                 title: player["playerName"].toString(),
                               );
@@ -135,22 +144,25 @@ class _GameState extends State<Game> {
                       },
                     ),
                   ),
-                  Padding( //game code of the room written on buttom
+                  Padding(
+                    //game code of the room written on buttom
                     padding: const EdgeInsets.symmetric(vertical: 1),
                     child: Text(
                       "${currentGame.gameId.substring(0, 6)}" + ":קוד חדר",
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                   ),
-                  currentGame.isAdmin //only admin can start the game - only he seeing the button
+                  currentGame
+                          .isAdmin //only admin can start the game - only he seeing the button
                       ? Container(
                           height: 50.0,
                           margin: EdgeInsets.all(10),
                           child: RaisedButton(
                             onPressed: () async {
-                              isStarting=true;
+                              isStarting = true;
                               if (numOfPlayers >=
-                                  3 * currentGame.numOfKillers) { //can start just if number of players is multiple 3 of the killers (3,9)
+                                  3 * currentGame.numOfKillers) {
+                                //can start just if number of players is multiple 3 of the killers (3,9)
                                 await startGame(); //start the game on firebase
                               }
                             },
@@ -158,7 +170,8 @@ class _GameState extends State<Game> {
                                 borderRadius: BorderRadius.circular(80.0)),
                             padding: EdgeInsets.all(0.0),
                             child: Ink(
-                              decoration: BoxDecoration( //button style
+                              decoration: BoxDecoration(
+                                  //button style
                                   gradient: (numOfPlayers >=
                                           3 * currentGame.numOfKillers)
                                       ? LinearGradient(
@@ -198,23 +211,31 @@ class _GameState extends State<Game> {
       ),
     );
   }
+
   //start game on firebase function
   Future<void> startGame() async {
-    DocumentReference games =
-        FirebaseFirestore.instance.collection('Games').doc(currentGame.gameId); //get the game doc
+    DocumentReference games = FirebaseFirestore.instance
+        .collection('Games')
+        .doc(currentGame.gameId); //get the game doc
 
-    CollectionReference players = games.collection('Players'); //get the players collection
+    CollectionReference players =
+        games.collection('Players'); //get the players collection
     await players.get().then((querySnapshot) {
       //shuffling the players list and dealing the cards by roles to the players
-      List<QueryDocumentSnapshot> snap = querySnapshot.docs; 
+      List<QueryDocumentSnapshot> snap = querySnapshot.docs;
       snap.shuffle();
-      snap[0].reference.update({'role':'cop'});
-      snap[1].reference.update({'role':'doctor'});
-      for(int i=2;i<2+currentGame.numOfKillers;i++)
-      snap[i].reference.update({'role':'killer'});
+      snap[0].reference.update({'role': 'cop'});
+      snap[1].reference.update({'role': 'doctor'});
+      for (int i = 2; i < 2 + currentGame.numOfKillers; i++)
+        snap[i].reference.update({'role': 'killer'});
     });
     //gets the role the player get from the shuffling
-    await players.where('playerName',isEqualTo:currentUser.name).limit(1).get().then((querySnapshot) => currentUser.role = querySnapshot.docs[0]['role']);
+    await players
+        .where('playerName', isEqualTo: currentUser.name)
+        .limit(1)
+        .get()
+        .then((querySnapshot) =>
+            currentUser.role = querySnapshot.docs[0]['role']);
     //update the game to start
     await games.update({'turn': 1});
   }

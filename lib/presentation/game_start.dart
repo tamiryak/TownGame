@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:circle_list/circle_list.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flame_audio/flame_audio.dart';
@@ -6,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:town_game/core/current_game.dart';
 import 'package:town_game/core/current_user.dart';
 import 'package:town_game/core/di.dart';
+import 'package:town_game/presentation/end_game_page.dart';
 import 'package:town_game/presentation/game.dart';
 import 'package:town_game/widgets/timer.dart';
 
@@ -27,6 +32,8 @@ class GameStart extends StatefulWidget {
 }
 
 CollectionReference players;
+AudioCache audioCache = AudioCache();
+AudioPlayer advancedPlayer = AudioPlayer();
 List<String> shape = ['♦', '♣', '♥', '♠'];
 
 class _GameStartState extends State<GameStart> {
@@ -40,6 +47,10 @@ class _GameStartState extends State<GameStart> {
     players = games.collection('Players');
     numOfKillersLeft = currentGame.numOfKillers;
     numOfPlayersLeft = currentGame.numOfPlayers;
+    if (Platform.isIOS) {
+      audioCache.fixedPlayer?.startHeadlessService();
+      advancedPlayer.startHeadlessService();
+    }
   }
 
 // this build moving between the frames - this actualy responsible for the game loop
@@ -50,19 +61,19 @@ class _GameStartState extends State<GameStart> {
       return (await showDialog(
             context: context,
             builder: (context) => new AlertDialog(
-              title: new Text('Are you sure?'),
-              content: new Text('Do you want to exit from game?'),
+              title: new Text('?אתה בטוח'),
+              content: new Text('האם אתה בטוח שאתה רוצה לצאת מהמשחק'),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: new Text('No'),
+                  child: new Text('לא'),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                           builder: (BuildContext context) => Town())),
-                  child: new Text('Yes'),
+                  child: new Text('כן'),
                 ),
               ],
             ),
@@ -79,7 +90,8 @@ class _GameStartState extends State<GameStart> {
               .get(),
           builder: (ctx, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
+              return Container(
+                  child: Center(child: CircularProgressIndicator()));
             } else {
               currentUser.role = snapshot.data.docs[0][
                   'role']; //the players gets their roles that was drawen for them
@@ -222,7 +234,7 @@ class _GameStartState extends State<GameStart> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (BuildContext context) =>
-                                                Town()));
+                                                EndGame(won: "הרוצחים")));
                                     break;
                                   //citizens won
                                   case 7:
@@ -230,7 +242,7 @@ class _GameStartState extends State<GameStart> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (BuildContext context) =>
-                                                Town()));
+                                                EndGame(won:"האזרחים")));
                                     break;
                                   //------------------------------
                                 }
@@ -276,6 +288,7 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
         AssetImage("lib/assets/nighttoday.gif"); //changing from night to day
     doctorSucceed = false;
 
+    if(currentGame.isAdmin) audioCache.play('sound/morning.mp3');
     Future.delayed(Duration(seconds: 4), () {
       //delaying the show of the timer animation
       _controller = AnimationController(
@@ -526,11 +539,16 @@ class _KillState extends State<Kill> {
   void initState() {
     super.initState();
     image = AssetImage("lib/assets/daytonight.gif");
-    isKiller = currentUser.role == 'killer';
+    isKiller=false;
+    if(currentGame.isAdmin) audioCache.play('sound/night.mp3');
     Future.delayed(Duration(seconds: 4), () {
       setState(() {
         killerText = 'שלום רוצח\n ?את מי תרצה לרצוח';
+        isKiller = currentUser.role == 'killer';
       });
+    });
+    Future.delayed(Duration(seconds: 3),(){
+      if(currentGame.isAdmin) audioCache.play('sound/killer.m4a');
     });
   }
 
@@ -589,63 +607,64 @@ class _KillState extends State<Kill> {
                               children: playersAlive
                                   .map<Widget>((DocumentSnapshot player) {
                                 if (player['playerName'] != currentUser.name) {
-                                    return
-                                player['killed'] == false
-                                    ? new Container(
-                                        width: 60,
-                                        height: 60,
-                                        child: InkWell(
-                                          onTap: () async {
-                                            //on killer pick a player
-                                            await FirebaseFirestore.instance
-                                                .collection('Games')
-                                                .doc(currentGame.gameId)
-                                                .update({
-                                              'killerPick': player[
-                                                  'playerName'] //saving the killer pick
-                                            });
-                                            await FirebaseFirestore.instance
-                                                .collection('Games')
-                                                .doc(currentGame.gameId)
-                                                .update({
-                                              'turn': 3
-                                            }); //moving to phase 3
-                                          },
-                                          child: ClipRRect(
-                                            //creating the avatar of each player
-                                            borderRadius:
-                                                BorderRadius.circular(100),
-                                            child: Container(
-                                                decoration: (player['avatar'] !=
-                                                        null)
-                                                    ? new BoxDecoration(
-                                                        color: Colors.brown,
-                                                        image:
-                                                            new DecorationImage(
-                                                          image: new AssetImage(
-                                                              "lib/assets/avatars/${player['avatar'] + 1}.png"),
-                                                          fit: BoxFit.fill,
-                                                        ))
-                                                    : BoxDecoration(
-                                                        color: Colors.brown),
-                                                child: Center(
-                                                    child: Text(
-                                                        player['playerName'],
-                                                        style: TextStyle(
-                                                            backgroundColor:
-                                                                Colors.black,
-                                                            color: Colors.white,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold)))),
-                                          ),
-                                        ))
-                                    : KilledCircle(
-                                        name: player['playerName'],
-                                        avatar: player['avatar'],
-                                        numOfP: playersAlive.length,
-                                      );
-                              }}).toList());
+                                  return player['killed'] == false
+                                      ? new Container(
+                                          width: 60,
+                                          height: 60,
+                                          child: InkWell(
+                                            onTap: () async {
+                                              //on killer pick a player
+                                              await FirebaseFirestore.instance
+                                                  .collection('Games')
+                                                  .doc(currentGame.gameId)
+                                                  .update({
+                                                'killerPick': player[
+                                                    'playerName'] //saving the killer pick
+                                              });
+                                              await FirebaseFirestore.instance
+                                                  .collection('Games')
+                                                  .doc(currentGame.gameId)
+                                                  .update({
+                                                'turn': 3
+                                              }); //moving to phase 3
+                                            },
+                                            child: ClipRRect(
+                                              //creating the avatar of each player
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                              child: Container(
+                                                  decoration: (player['avatar'] !=
+                                                          null)
+                                                      ? new BoxDecoration(
+                                                          color: Colors.brown,
+                                                          image:
+                                                              new DecorationImage(
+                                                            image: new AssetImage(
+                                                                "lib/assets/avatars/${player['avatar'] + 1}.png"),
+                                                            fit: BoxFit.fill,
+                                                          ))
+                                                      : BoxDecoration(
+                                                          color: Colors.brown),
+                                                  child: Center(
+                                                      child: Text(
+                                                          player['playerName'],
+                                                          style: TextStyle(
+                                                              backgroundColor:
+                                                                  Colors.black,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold)))),
+                                            ),
+                                          ))
+                                      : KilledCircle(
+                                          name: player['playerName'],
+                                          avatar: player['avatar'],
+                                          numOfP: playersAlive.length,
+                                        );
+                                }
+                              }).toList());
                         }
                       }
                     }))
@@ -675,13 +694,20 @@ class _HealState extends State<Heal> {
     // TODO: implement initState
     super.initState();
     doctorSucceed = false;
-    isDoctor = currentUser.role == 'doctor';
+    isDoctor = false;
     FirebaseFirestore.instance
         .collection('Games')
         .doc(currentGame.gameId)
         .get()
         .then((value) =>
             killerPick = value['killerPick']); //getting the killer pick
+
+    Future.delayed(Duration(seconds: 2), () {
+      setState(() {
+      isDoctor = currentUser.role == 'doctor';
+      });
+      if(currentGame.isAdmin) audioCache.play('sound/doctor.m4a');
+    });
   }
 
   @override
@@ -737,74 +763,79 @@ class _HealState extends State<Heal> {
                               origin: Offset(0, 0),
                               children: playersAlive
                                   .map<Widget>((DocumentSnapshot player) {
-                                    return
-                                //creating the circle list
-                                player['killed'] == false
-                                    ? new Container(
-                                        width: 60,
-                                        height: 60,
-                                        child: InkWell(
-                                          onTap: () async {
-                                            //if doctor pick player
-                                            await FirebaseFirestore
-                                                .instance //check if player was killed by the killer
-                                                .collection('Games')
-                                                .doc(currentGame.gameId)
-                                                .get()
-                                                .then((snap) {
-                                              if (snap['killerPick'] ==
-                                                  player['playerName']) {
-                                                setState(() {
-                                                  doctorSucceed = true;
-                                                  killerPick =
-                                                      snap['killerPick'];
+                                return
+                                    //creating the circle list
+                                    player['killed'] == false
+                                        ? new Container(
+                                            width: 60,
+                                            height: 60,
+                                            child: InkWell(
+                                              onTap: () async {
+                                                //if doctor pick player
+                                                await FirebaseFirestore
+                                                    .instance //check if player was killed by the killer
+                                                    .collection('Games')
+                                                    .doc(currentGame.gameId)
+                                                    .get()
+                                                    .then((snap) {
+                                                  if (snap['killerPick'] ==
+                                                      player['playerName']) {
+                                                    setState(() {
+                                                      doctorSucceed = true;
+                                                      killerPick =
+                                                          snap['killerPick'];
+                                                    });
+                                                  }
                                                 });
-                                              }
-                                            });
 
-                                            await FirebaseFirestore
-                                                .instance //save rather doctor succeed or not
-                                                .collection('Games')
-                                                .doc(currentGame.gameId)
-                                                .update({
-                                              'turn': 4,
-                                              'doctorSucceed': doctorSucceed
-                                            });
-                                          },
-                                          child: ClipRRect(
-                                            //each player gets avatar
-                                            borderRadius:
-                                                BorderRadius.circular(100),
-                                            child: Container(
-                                                decoration: (player['avatar'] !=
-                                                        null)
-                                                    ? new BoxDecoration(
-                                                        color: Colors.brown,
-                                                        image:
-                                                            new DecorationImage(
-                                                          image: new AssetImage(
-                                                              "lib/assets/avatars/${player['avatar'] + 1}.png"),
-                                                          fit: BoxFit.fill,
-                                                        ))
-                                                    : BoxDecoration(
-                                                        color: Colors.brown),
-                                                child: Center(
-                                                    child: Text(
-                                                        player['playerName'],
-                                                        style: TextStyle(
-                                                            backgroundColor:
-                                                                Colors.black,
-                                                            color: Colors.white,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold)))),
-                                          ),
-                                        ))
-                                    : KilledCircle(
-                                        name: player['playerName'],
-                                        avatar: player['avatar'],
-                                        numOfP: playersAlive.length,
-                                      );
+                                                await FirebaseFirestore
+                                                    .instance //save rather doctor succeed or not
+                                                    .collection('Games')
+                                                    .doc(currentGame.gameId)
+                                                    .update({
+                                                  'turn': 4,
+                                                  'doctorSucceed': doctorSucceed
+                                                });
+                                              },
+                                              child: ClipRRect(
+                                                //each player gets avatar
+                                                borderRadius:
+                                                    BorderRadius.circular(100),
+                                                child: Container(
+                                                    decoration: (player[
+                                                                'avatar'] !=
+                                                            null)
+                                                        ? new BoxDecoration(
+                                                            color: Colors.brown,
+                                                            image:
+                                                                new DecorationImage(
+                                                              image: new AssetImage(
+                                                                  "lib/assets/avatars/${player['avatar'] + 1}.png"),
+                                                              fit: BoxFit.fill,
+                                                            ))
+                                                        : BoxDecoration(
+                                                            color: Colors
+                                                                .brown),
+                                                    child: Center(
+                                                        child: Text(
+                                                            player[
+                                                                'playerName'],
+                                                            style: TextStyle(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .black,
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold)))),
+                                              ),
+                                            ))
+                                        : KilledCircle(
+                                            name: player['playerName'],
+                                            avatar: player['avatar'],
+                                            numOfP: playersAlive.length,
+                                          );
                               }).toList());
                         }
                       }
@@ -830,11 +861,12 @@ bool picked;
 
 class _InvestigateState extends State<Investigate> {
   final CurrentUser currentUser = getIt();
+  String copText = "";
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    isCop = currentUser.role == 'cop';
+    isCop = false;
     copRight = false;
     picked = false;
     FirebaseFirestore.instance
@@ -843,6 +875,13 @@ class _InvestigateState extends State<Investigate> {
         .get()
         .then((snap) {
       doctorSucceed = snap['doctorSucceed'];
+    });
+    Future.delayed(Duration(seconds: 2), () {
+      if(currentGame.isAdmin) audioCache.play('sound/cop.m4a');
+      copText = 'שלום שוטר\n ?את מי תרצה לחקור';
+      setState(() {
+        isCop=currentUser.role == 'cop';
+      });
     });
   }
 
@@ -861,7 +900,7 @@ class _InvestigateState extends State<Investigate> {
             ? Positioned(
                 top: MediaQuery.of(context).size.height * 0.22,
                 child: Text(
-                  'שלום שוטר\n ?את מי תרצה לחקור',
+                  copText,
                   style: TextStyle(color: Colors.white, fontSize: 35),
                   textAlign: TextAlign.center,
                 ))
@@ -898,8 +937,7 @@ class _InvestigateState extends State<Investigate> {
                                     //creating the circle list for each player
                                     if (player['playerName'] !=
                                         currentUser.name) {
-                                          return
-                                      player['killed'] == false
+                                      return player['killed'] == false
                                           ? new Container(
                                               width: 60,
                                               height: 60,
