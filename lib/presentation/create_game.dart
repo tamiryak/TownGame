@@ -8,6 +8,23 @@ import 'package:town_game/core/di.dart';
 import 'game.dart';
 
 final GlobalKey<FormBuilderState> fbKey = GlobalKey<FormBuilderState>();
+DateTime loginClickTime;
+
+bool isRedundentClick(DateTime currentTime) {
+  if (loginClickTime == null) {
+    loginClickTime = currentTime;
+    print("first click");
+    return false;
+  }
+  print('diff is ${currentTime.difference(loginClickTime).inSeconds}');
+  if (currentTime.difference(loginClickTime).inSeconds < 4) {
+    //set this difference time in seconds
+    return true;
+  }
+
+  loginClickTime = currentTime;
+  return false;
+}
 
 class CreateGame extends StatefulWidget {
   const CreateGame({Key key}) : super(key: key);
@@ -159,6 +176,10 @@ class _CreateGameState extends State<CreateGame> {
                       child: RaisedButton(
                         // if user press creating game
                         onPressed: () async {
+                          if (isRedundentClick(DateTime.now())) {
+                            print('hold on, processing');
+                            return;
+                          }
                           if (!isCreating) {
                             setState(() {
                               isCreating = true;

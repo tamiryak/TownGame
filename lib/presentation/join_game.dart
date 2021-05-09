@@ -10,6 +10,23 @@ import 'game.dart';
 final GlobalKey<FormBuilderState> fbKey =
     GlobalKey<FormBuilderState>(); //form builder key
 bool gameCodeValid = true; //boolean check if user entered valid code
+DateTime loginClickTime;
+
+bool isRedundentClick(DateTime currentTime) {
+  if (loginClickTime == null) {
+    loginClickTime = currentTime;
+    print("first click");
+    return false;
+  }
+  print('diff is ${currentTime.difference(loginClickTime).inSeconds}');
+  if (currentTime.difference(loginClickTime).inSeconds < 4) {
+    //set this difference time in seconds
+    return true;
+  }
+
+  loginClickTime = currentTime;
+  return false;
+}
 
 class JoinGame extends StatefulWidget {
   const JoinGame({Key key}) : super(key: key);
@@ -78,7 +95,11 @@ class _JoinGameState extends State<JoinGame> {
                     child: RaisedButton(
                       //button for entering to game
                       onPressed: () async {
-                          if(fbKey.currentState.validate()){
+                        if (isRedundentClick(DateTime.now())) {
+                          print('hold on, processing');
+                          return;
+                        }
+                        if (fbKey.currentState.validate()) {
                           fbKey.currentState.saveAndValidate();
                           String playerName = fbKey.currentState.value[
                               'guestName']; //saving the player name on var
@@ -98,8 +119,6 @@ class _JoinGameState extends State<JoinGame> {
                                           Game()), //moving to game (player list page)
                                 )
                               : isJoining = false;
-
-                              
                         }
                       },
                       shape: RoundedRectangleBorder(
