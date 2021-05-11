@@ -177,10 +177,13 @@ class _CreateGameState extends State<CreateGame> {
                         // if user press creating game
                         onPressed: () async {
                           if (isRedundentClick(DateTime.now())) {
+                            setState(() {
+                              isCreating = false;
+                            });
                             print('hold on, processing');
                             return;
                           }
-                          if (!isCreating) {
+                           else {
                             setState(() {
                               isCreating = true;
                             });

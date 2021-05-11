@@ -31,6 +31,7 @@ class EndGame extends StatelessWidget {
                     fontSize: 35,
                     fontWeight: FontWeight.bold),
               ),
+              SizedBox(height:20),
               Container(
                 height: 50.0,
                 margin: EdgeInsets.all(10),

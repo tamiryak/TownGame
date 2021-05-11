@@ -95,11 +95,11 @@ class _JoinGameState extends State<JoinGame> {
                     child: RaisedButton(
                       //button for entering to game
                       onPressed: () async {
-                        if (isRedundentClick(DateTime.now())) {
-                          print('hold on, processing');
-                          return;
-                        }
                         if (fbKey.currentState.validate()) {
+                          if (isRedundentClick(DateTime.now())) {
+                            print('hold on, processing');
+                            return;
+                          }
                           fbKey.currentState.saveAndValidate();
                           String playerName = fbKey.currentState.value[
                               'guestName']; //saving the player name on var

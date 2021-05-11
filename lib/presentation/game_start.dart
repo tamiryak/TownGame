@@ -242,7 +242,7 @@ class _GameStartState extends State<GameStart> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (BuildContext context) =>
-                                                EndGame(won:"האזרחים")));
+                                                EndGame(won: "האזרחים")));
                                     break;
                                   //------------------------------
                                 }
@@ -288,7 +288,7 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
         AssetImage("lib/assets/nighttoday.gif"); //changing from night to day
     doctorSucceed = false;
 
-    if(currentGame.isAdmin) audioCache.play('sound/morning.mp3');
+    if (currentGame.isAdmin) audioCache.play('sound/morning.mp3');
     Future.delayed(Duration(seconds: 4), () {
       //delaying the show of the timer animation
       _controller = AnimationController(
@@ -375,63 +375,99 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
                                   .map<Widget>((DocumentSnapshot player) {
                                 return player['killed'] ==
                                         false //if player was killed - avatar with red x
-                                    ? new Container(
-                                        //else - pressable avatar
-                                        width: 60,
-                                        height: 60,
-                                        child: InkWell(
-                                          //on player pressed - admin press on someone (kill the player)
-                                          onTap: () async {
-                                            await FirebaseFirestore.instance
-                                                .collection('Games')
-                                                .doc(currentGame.gameId)
-                                                .collection('Players')
-                                                .where('playerName',
-                                                    isEqualTo:
-                                                        player['playerName'])
-                                                .limit(1)
-                                                .get()
-                                                .then((value) {
-                                              (value.docs[0])
-                                                  .reference
-                                                  .update({'killed': true});
-                                              if (value.docs[0]['role'] ==
-                                                  'doctor')
-                                                doctorIsDead = true;
-                                              else if (value.docs[0]['role'] ==
-                                                  'cop') copIsDead = true;
-                                            });
-                                            changeturn(); //moving to night mode
-                                          },
-                                          child: ClipRRect(
-                                            //avatar of player
-                                            borderRadius:
-                                                BorderRadius.circular(100),
-                                            child: Container(
-                                                decoration: (player['avatar'] !=
-                                                        null)
-                                                    ? new BoxDecoration(
-                                                        color: Colors.brown,
-                                                        image:
-                                                            new DecorationImage(
-                                                          image: new AssetImage(
-                                                              "lib/assets/avatars/${player['avatar'] + 1}.png"),
-                                                          fit: BoxFit.fill,
-                                                        ))
-                                                    : BoxDecoration(
-                                                        color: Colors.brown),
-                                                child: Center(
-                                                    child: Text(
-                                                        player['playerName'],
-                                                        style: TextStyle(
-                                                            color: Colors.white,
-                                                            backgroundColor:
-                                                                Colors.black,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold)))),
-                                          ),
-                                        ))
+                                    ? Container(
+                                        height: 100,
+                                        width: 100,
+                                        child: Column(
+                                          children: [
+                                            Text(player['playerName'],
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    shadows: [
+                                                      Shadow(
+                                                          // bottomLeft
+                                                          offset: Offset(
+                                                              -1.5, -1.5),
+                                                          color: Colors.black),
+                                                      Shadow(
+                                                          // bottomRight
+                                                          offset:
+                                                              Offset(1.5, -1.5),
+                                                          color: Colors.black),
+                                                      Shadow(
+                                                          // topRight
+                                                          offset:
+                                                              Offset(1.5, 1.5),
+                                                          color: Colors.black),
+                                                      Shadow(
+                                                          // topLeft
+                                                          offset:
+                                                              Offset(-1.5, 1.5),
+                                                          color: Colors.black),
+                                                    ],
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                            new Container(
+                                                //else - pressable avatar
+                                                width: 60,
+                                                height: 60,
+                                                child: InkWell(
+                                                  //on player pressed - admin press on someone (kill the player)
+                                                  onTap: () async {
+                                                    await FirebaseFirestore
+                                                        .instance
+                                                        .collection('Games')
+                                                        .doc(currentGame.gameId)
+                                                        .collection('Players')
+                                                        .where('playerName',
+                                                            isEqualTo: player[
+                                                                'playerName'])
+                                                        .limit(1)
+                                                        .get()
+                                                        .then((value) {
+                                                      (value.docs[0])
+                                                          .reference
+                                                          .update(
+                                                              {'killed': true});
+                                                      if (value.docs[0]
+                                                              ['role'] ==
+                                                          'doctor')
+                                                        doctorIsDead = true;
+                                                      else if (value.docs[0]
+                                                              ['role'] ==
+                                                          'cop')
+                                                        copIsDead = true;
+                                                    });
+                                                    changeturn(); //moving to night mode
+                                                  },
+                                                  child: ClipRRect(
+                                                    //avatar of player
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            100),
+                                                    child: Container(
+                                                      decoration: (player[
+                                                                  'avatar'] !=
+                                                              null)
+                                                          ? new BoxDecoration(
+                                                              color:
+                                                                  Colors.brown,
+                                                              image:
+                                                                  new DecorationImage(
+                                                                image: new AssetImage(
+                                                                    "lib/assets/avatars/${player['avatar'] + 1}.png"),
+                                                                fit:
+                                                                    BoxFit.fill,
+                                                              ))
+                                                          : BoxDecoration(
+                                                              color:
+                                                                  Colors.brown),
+                                                    ),
+                                                  ),
+                                                )),
+                                          ],
+                                        ),
+                                      )
                                     : KilledCircle(
                                         //if the player was killed - red x circle container
                                         name: player['playerName'],
@@ -489,35 +525,61 @@ class KilledCircle extends StatelessWidget {
   @override
   //building the style - avatar - red x on the avatar
   Widget build(BuildContext context) {
-    return new Container(
-        width: 60,
-        height: 60,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(100),
-              child: Container(
-                  decoration: (avatar != null)
-                      ? new BoxDecoration(
-                          color: Colors.brown,
-                          image: new DecorationImage(
-                            image: new AssetImage(
-                                "lib/assets/avatars/${avatar + 1}.png"),
-                            fit: BoxFit.fill,
-                          ))
-                      : BoxDecoration(color: Colors.brown),
-                  child: Center(
-                      child: Text(name,
-                          style: TextStyle(
-                              color: Colors.white,
-                              backgroundColor: Colors.black,
-                              fontWeight: FontWeight.bold)))),
-            ),
-            Text("x",
-                style: TextStyle(color: Colors.red, fontSize: 800 / numOfP))
-          ],
-        ));
+    return Container(
+      height: 100,
+      width: 100,
+      child: Column(
+        children: [
+          Text(name,
+              style: TextStyle(
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                        // bottomLeft
+                        offset: Offset(-1.5, -1.5),
+                        color: Colors.black),
+                    Shadow(
+                        // bottomRight
+                        offset: Offset(1.5, -1.5),
+                        color: Colors.black),
+                    Shadow(
+                        // topRight
+                        offset: Offset(1.5, 1.5),
+                        color: Colors.black),
+                    Shadow(
+                        // topLeft
+                        offset: Offset(-1.5, 1.5),
+                        color: Colors.black),
+                  ],
+                  fontWeight: FontWeight.bold)),
+          new Container(
+              width: 60,
+              height: 60,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: Container(
+                      decoration: (avatar != null)
+                          ? new BoxDecoration(
+                              color: Colors.brown,
+                              image: new DecorationImage(
+                                image: new AssetImage(
+                                    "lib/assets/avatars/${avatar + 1}.png"),
+                                fit: BoxFit.fill,
+                              ))
+                          : BoxDecoration(color: Colors.brown),
+                    ),
+                  ),
+                  Text("x",
+                      style:
+                          TextStyle(color: Colors.red, fontSize: 800 / numOfP))
+                ],
+              )),
+        ],
+      ),
+    );
   }
 }
 
@@ -539,16 +601,16 @@ class _KillState extends State<Kill> {
   void initState() {
     super.initState();
     image = AssetImage("lib/assets/daytonight.gif");
-    isKiller=false;
-    if(currentGame.isAdmin) audioCache.play('sound/night.mp3');
+    isKiller = false;
+    if (currentGame.isAdmin) audioCache.play('sound/night.mp3');
     Future.delayed(Duration(seconds: 4), () {
       setState(() {
         killerText = 'שלום רוצח\n ?את מי תרצה לרצוח';
         isKiller = currentUser.role == 'killer';
       });
     });
-    Future.delayed(Duration(seconds: 3),(){
-      if(currentGame.isAdmin) audioCache.play('sound/killer.m4a');
+    Future.delayed(Duration(seconds: 3), () {
+      if (currentGame.isAdmin) audioCache.play('sound/killer.m4a');
     });
   }
 
@@ -608,56 +670,94 @@ class _KillState extends State<Kill> {
                                   .map<Widget>((DocumentSnapshot player) {
                                 if (player['playerName'] != currentUser.name) {
                                   return player['killed'] == false
-                                      ? new Container(
-                                          width: 60,
-                                          height: 60,
-                                          child: InkWell(
-                                            onTap: () async {
-                                              //on killer pick a player
-                                              await FirebaseFirestore.instance
-                                                  .collection('Games')
-                                                  .doc(currentGame.gameId)
-                                                  .update({
-                                                'killerPick': player[
-                                                    'playerName'] //saving the killer pick
-                                              });
-                                              await FirebaseFirestore.instance
-                                                  .collection('Games')
-                                                  .doc(currentGame.gameId)
-                                                  .update({
-                                                'turn': 3
-                                              }); //moving to phase 3
-                                            },
-                                            child: ClipRRect(
-                                              //creating the avatar of each player
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              child: Container(
-                                                  decoration: (player['avatar'] !=
-                                                          null)
-                                                      ? new BoxDecoration(
-                                                          color: Colors.brown,
-                                                          image:
-                                                              new DecorationImage(
-                                                            image: new AssetImage(
-                                                                "lib/assets/avatars/${player['avatar'] + 1}.png"),
-                                                            fit: BoxFit.fill,
-                                                          ))
-                                                      : BoxDecoration(
-                                                          color: Colors.brown),
-                                                  child: Center(
-                                                      child: Text(
-                                                          player['playerName'],
-                                                          style: TextStyle(
-                                                              backgroundColor:
-                                                                  Colors.black,
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)))),
-                                            ),
-                                          ))
+                                      ? Container(
+                                          height: 100,
+                                          width: 100,
+                                          child: Column(
+                                            children: [
+                                              Text(player['playerName'],
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      shadows: [
+                                                        Shadow(
+                                                            // bottomLeft
+                                                            offset: Offset(
+                                                                -1.5, -1.5),
+                                                            color:
+                                                                Colors.black),
+                                                        Shadow(
+                                                            // bottomRight
+                                                            offset: Offset(
+                                                                1.5, -1.5),
+                                                            color:
+                                                                Colors.black),
+                                                        Shadow(
+                                                            // topRight
+                                                            offset: Offset(
+                                                                1.5, 1.5),
+                                                            color:
+                                                                Colors.black),
+                                                        Shadow(
+                                                            // topLeft
+                                                            offset: Offset(
+                                                                -1.5, 1.5),
+                                                            color:
+                                                                Colors.black),
+                                                      ],
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              new Container(
+                                                  width: 60,
+                                                  height: 60,
+                                                  child: InkWell(
+                                                    onTap: () async {
+                                                      //on killer pick a player
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection('Games')
+                                                          .doc(currentGame
+                                                              .gameId)
+                                                          .update({
+                                                        'killerPick': player[
+                                                            'playerName'] //saving the killer pick
+                                                      });
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection('Games')
+                                                          .doc(currentGame
+                                                              .gameId)
+                                                          .update({
+                                                        'turn': 3
+                                                      }); //moving to phase 3
+                                                    },
+                                                    child: ClipRRect(
+                                                      //creating the avatar of each player
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              100),
+                                                      child: Container(
+                                                        decoration: (player[
+                                                                    'avatar'] !=
+                                                                null)
+                                                            ? new BoxDecoration(
+                                                                color: Colors
+                                                                    .brown,
+                                                                image:
+                                                                    new DecorationImage(
+                                                                  image: new AssetImage(
+                                                                      "lib/assets/avatars/${player['avatar'] + 1}.png"),
+                                                                  fit: BoxFit
+                                                                      .fill,
+                                                                ))
+                                                            : BoxDecoration(
+                                                                color: Colors
+                                                                    .brown),
+                                                      ),
+                                                    ),
+                                                  )),
+                                            ],
+                                          ),
+                                        )
                                       : KilledCircle(
                                           name: player['playerName'],
                                           avatar: player['avatar'],
@@ -704,9 +804,9 @@ class _HealState extends State<Heal> {
 
     Future.delayed(Duration(seconds: 2), () {
       setState(() {
-      isDoctor = currentUser.role == 'doctor';
+        isDoctor = currentUser.role == 'doctor';
       });
-      if(currentGame.isAdmin) audioCache.play('sound/doctor.m4a');
+      if (currentGame.isAdmin) audioCache.play('sound/doctor.m4a');
     });
   }
 
@@ -766,71 +866,107 @@ class _HealState extends State<Heal> {
                                 return
                                     //creating the circle list
                                     player['killed'] == false
-                                        ? new Container(
-                                            width: 60,
-                                            height: 60,
-                                            child: InkWell(
-                                              onTap: () async {
-                                                //if doctor pick player
-                                                await FirebaseFirestore
-                                                    .instance //check if player was killed by the killer
-                                                    .collection('Games')
-                                                    .doc(currentGame.gameId)
-                                                    .get()
-                                                    .then((snap) {
-                                                  if (snap['killerPick'] ==
-                                                      player['playerName']) {
-                                                    setState(() {
-                                                      doctorSucceed = true;
-                                                      killerPick =
-                                                          snap['killerPick'];
-                                                    });
-                                                  }
-                                                });
+                                        ? Container(
+                                            width: 100,
+                                            height: 100,
+                                            child: Column(
+                                              children: [
+                                                Text(player['playerName'],
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        shadows: [
+                                                          Shadow(
+                                                              // bottomLeft
+                                                              offset: Offset(
+                                                                  -1.5, -1.5),
+                                                              color:
+                                                                  Colors.black),
+                                                          Shadow(
+                                                              // bottomRight
+                                                              offset: Offset(
+                                                                  1.5, -1.5),
+                                                              color:
+                                                                  Colors.black),
+                                                          Shadow(
+                                                              // topRight
+                                                              offset: Offset(
+                                                                  1.5, 1.5),
+                                                              color:
+                                                                  Colors.black),
+                                                          Shadow(
+                                                              // topLeft
+                                                              offset: Offset(
+                                                                  -1.5, 1.5),
+                                                              color:
+                                                                  Colors.black),
+                                                        ],
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                                new Container(
+                                                    width: 60,
+                                                    height: 60,
+                                                    child: InkWell(
+                                                      onTap: () async {
+                                                        //if doctor pick player
+                                                        await FirebaseFirestore
+                                                            .instance //check if player was killed by the killer
+                                                            .collection('Games')
+                                                            .doc(currentGame
+                                                                .gameId)
+                                                            .get()
+                                                            .then((snap) {
+                                                          if (snap[
+                                                                  'killerPick'] ==
+                                                              player[
+                                                                  'playerName']) {
+                                                            setState(() {
+                                                              doctorSucceed =
+                                                                  true;
+                                                              killerPick = snap[
+                                                                  'killerPick'];
+                                                            });
+                                                          }
+                                                        });
 
-                                                await FirebaseFirestore
-                                                    .instance //save rather doctor succeed or not
-                                                    .collection('Games')
-                                                    .doc(currentGame.gameId)
-                                                    .update({
-                                                  'turn': 4,
-                                                  'doctorSucceed': doctorSucceed
-                                                });
-                                              },
-                                              child: ClipRRect(
-                                                //each player gets avatar
-                                                borderRadius:
-                                                    BorderRadius.circular(100),
-                                                child: Container(
-                                                    decoration: (player[
-                                                                'avatar'] !=
-                                                            null)
-                                                        ? new BoxDecoration(
-                                                            color: Colors.brown,
-                                                            image:
-                                                                new DecorationImage(
-                                                              image: new AssetImage(
-                                                                  "lib/assets/avatars/${player['avatar'] + 1}.png"),
-                                                              fit: BoxFit.fill,
-                                                            ))
-                                                        : BoxDecoration(
-                                                            color: Colors
-                                                                .brown),
-                                                    child: Center(
-                                                        child: Text(
-                                                            player[
-                                                                'playerName'],
-                                                            style: TextStyle(
-                                                                backgroundColor:
-                                                                    Colors
-                                                                        .black,
-                                                                color: Colors
-                                                                    .white,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)))),
-                                              ),
-                                            ))
+                                                        await FirebaseFirestore
+                                                            .instance //save rather doctor succeed or not
+                                                            .collection('Games')
+                                                            .doc(currentGame
+                                                                .gameId)
+                                                            .update({
+                                                          'turn': 4,
+                                                          'doctorSucceed':
+                                                              doctorSucceed
+                                                        });
+                                                      },
+                                                      child: ClipRRect(
+                                                        //each player gets avatar
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(100),
+                                                        child: Container(
+                                                          decoration: (player[
+                                                                      'avatar'] !=
+                                                                  null)
+                                                              ? new BoxDecoration(
+                                                                  color: Colors
+                                                                      .brown,
+                                                                  image:
+                                                                      new DecorationImage(
+                                                                    image: new AssetImage(
+                                                                        "lib/assets/avatars/${player['avatar'] + 1}.png"),
+                                                                    fit: BoxFit
+                                                                        .fill,
+                                                                  ))
+                                                              : BoxDecoration(
+                                                                  color: Colors
+                                                                      .brown),
+                                                        ),
+                                                      ),
+                                                    )),
+                                              ],
+                                            ),
+                                          )
                                         : KilledCircle(
                                             name: player['playerName'],
                                             avatar: player['avatar'],
@@ -877,10 +1013,10 @@ class _InvestigateState extends State<Investigate> {
       doctorSucceed = snap['doctorSucceed'];
     });
     Future.delayed(Duration(seconds: 2), () {
-      if(currentGame.isAdmin) audioCache.play('sound/cop.m4a');
+      if (currentGame.isAdmin) audioCache.play('sound/cop.m4a');
       copText = 'שלום שוטר\n ?את מי תרצה לחקור';
       setState(() {
-        isCop=currentUser.role == 'cop';
+        isCop = currentUser.role == 'cop';
       });
     });
   }
@@ -938,117 +1074,164 @@ class _InvestigateState extends State<Investigate> {
                                     if (player['playerName'] !=
                                         currentUser.name) {
                                       return player['killed'] == false
-                                          ? new Container(
-                                              width: 60,
-                                              height: 60,
-                                              child: InkWell(
-                                                onTap: () async {
-                                                  //if cop pick player
-                                                  await FirebaseFirestore //check on firebase if cop was right
-                                                      .instance
-                                                      .collection('Games')
-                                                      .doc(currentGame.gameId)
-                                                      .collection('Players')
-                                                      .where('playerName',
-                                                          isEqualTo: player[
-                                                              'playerName'])
-                                                      .limit(1)
-                                                      .get()
-                                                      .then((value) => {
-                                                            if (value.docs[0]
-                                                                    ['role'] ==
-                                                                'killer')
-                                                              copRight = true
-                                                          });
-                                                  if (!doctorSucceed) {
-                                                    //check if doctor was succeed or not
-                                                    await FirebaseFirestore
-                                                        .instance
-                                                        .collection('Games')
-                                                        .doc(currentGame.gameId)
-                                                        .collection('Players')
-                                                        .where('playerName',
-                                                            isEqualTo:
-                                                                killerPick)
-                                                        .limit(1)
-                                                        .get()
-                                                        .then((value) {
-                                                      //if doctor not succeed - kill the player on firebase
-                                                      (value.docs[0])
-                                                          .reference
-                                                          .update(
-                                                              {'killed': true});
-                                                      if (value.docs[0]
-                                                              ['role'] ==
-                                                          'doctor')
-                                                        doctorIsDead = true;
-                                                      else if (value.docs[0]
-                                                              ['role'] ==
-                                                          'cop')
-                                                        copIsDead = true;
-                                                      else if (value.docs[0]
-                                                              ['role'] ==
-                                                          'killer')
-                                                        numOfKillersLeft--;
-                                                      numOfPlayersLeft--; //reducing number of players left
-                                                    });
-                                                  }
-                                                  setState(() {
-                                                    copRight =
-                                                        copRight ? true : false;
-                                                  });
-                                                  setState(() {
-                                                    picked = true;
-                                                  });
-                                                  Future.delayed(
-                                                      Duration(seconds: 2),
-                                                      () => {
-                                                            FirebaseFirestore
+                                          ? Container(
+                                              width: 100,
+                                              height: 100,
+                                              child: Column(
+                                                children: [
+                                                  Text(player['playerName'],
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          shadows: [
+                                                            Shadow(
+                                                                // bottomLeft
+                                                                offset: Offset(
+                                                                    -1.5, -1.5),
+                                                                color: Colors
+                                                                    .black),
+                                                            Shadow(
+                                                                // bottomRight
+                                                                offset: Offset(
+                                                                    1.5, -1.5),
+                                                                color: Colors
+                                                                    .black),
+                                                            Shadow(
+                                                                // topRight
+                                                                offset: Offset(
+                                                                    1.5, 1.5),
+                                                                color: Colors
+                                                                    .black),
+                                                            Shadow(
+                                                                // topLeft
+                                                                offset: Offset(
+                                                                    -1.5, 1.5),
+                                                                color: Colors
+                                                                    .black),
+                                                          ],
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                  new Container(
+                                                      width: 60,
+                                                      height: 60,
+                                                      child: InkWell(
+                                                        onTap: () async {
+                                                          //if cop pick player
+                                                          await FirebaseFirestore //check on firebase if cop was right
+                                                              .instance
+                                                              .collection(
+                                                                  'Games')
+                                                              .doc(currentGame
+                                                                  .gameId)
+                                                              .collection(
+                                                                  'Players')
+                                                              .where(
+                                                                  'playerName',
+                                                                  isEqualTo: player[
+                                                                      'playerName'])
+                                                              .limit(1)
+                                                              .get()
+                                                              .then(
+                                                                  (value) => {
+                                                                        if (value.docs[0]['role'] ==
+                                                                            'killer')
+                                                                          copRight =
+                                                                              true
+                                                                      });
+                                                          if (!doctorSucceed) {
+                                                            //check if doctor was succeed or not
+                                                            await FirebaseFirestore
                                                                 .instance
                                                                 .collection(
                                                                     'Games')
                                                                 .doc(currentGame
                                                                     .gameId)
-                                                                .update(
-                                                                    {'turn': 1})
+                                                                .collection(
+                                                                    'Players')
+                                                                .where(
+                                                                    'playerName',
+                                                                    isEqualTo:
+                                                                        killerPick)
+                                                                .limit(1)
+                                                                .get()
+                                                                .then((value) {
+                                                              //if doctor not succeed - kill the player on firebase
+                                                              (value.docs[0])
+                                                                  .reference
+                                                                  .update({
+                                                                'killed': true
+                                                              });
+                                                              if (value.docs[0][
+                                                                      'role'] ==
+                                                                  'doctor')
+                                                                doctorIsDead =
+                                                                    true;
+                                                              else if (value
+                                                                          .docs[0]
+                                                                      [
+                                                                      'role'] ==
+                                                                  'cop')
+                                                                copIsDead =
+                                                                    true;
+                                                              else if (value
+                                                                          .docs[0]
+                                                                      [
+                                                                      'role'] ==
+                                                                  'killer')
+                                                                numOfKillersLeft--;
+                                                              numOfPlayersLeft--; //reducing number of players left
+                                                            });
+                                                          }
+                                                          setState(() {
+                                                            copRight = copRight
+                                                                ? true
+                                                                : false;
                                                           });
-                                                },
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          100),
-                                                  child: Container(
-                                                      decoration: (player[
-                                                                  'avatar'] !=
-                                                              null)
-                                                          ? new BoxDecoration(
-                                                              color: Colors
-                                                                  .brown,
-                                                              image:
-                                                                  new DecorationImage(
-                                                                image: new AssetImage(
-                                                                    "lib/assets/avatars/${player['avatar'] + 1}.png"),
-                                                                fit:
-                                                                    BoxFit.fill,
-                                                              ))
-                                                          : BoxDecoration(
-                                                              color:
-                                                                  Colors.brown),
-                                                      child: Center(
-                                                          child: Text(
-                                                              player[
-                                                                  'playerName'],
-                                                              style: TextStyle(
-                                                                  backgroundColor:
-                                                                      Colors
-                                                                          .black,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)))),
-                                                ),
-                                              ))
+                                                          setState(() {
+                                                            picked = true;
+                                                          });
+                                                          Future.delayed(
+                                                              Duration(
+                                                                  seconds: 2),
+                                                              () => {
+                                                                    FirebaseFirestore
+                                                                        .instance
+                                                                        .collection(
+                                                                            'Games')
+                                                                        .doc(currentGame
+                                                                            .gameId)
+                                                                        .update({
+                                                                      'turn': 1
+                                                                    })
+                                                                  });
+                                                        },
+                                                        child: ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      100),
+                                                          child: Container(
+                                                            decoration: (player[
+                                                                        'avatar'] !=
+                                                                    null)
+                                                                ? new BoxDecoration(
+                                                                    color: Colors
+                                                                        .brown,
+                                                                    image:
+                                                                        new DecorationImage(
+                                                                      image: new AssetImage(
+                                                                          "lib/assets/avatars/${player['avatar'] + 1}.png"),
+                                                                      fit: BoxFit
+                                                                          .fill,
+                                                                    ))
+                                                                : BoxDecoration(
+                                                                    color: Colors
+                                                                        .brown),
+                                                          ),
+                                                        ),
+                                                      )),
+                                                ],
+                                              ),
+                                            )
                                           : KilledCircle(
                                               name: player['playerName'],
                                               avatar: player['avatar'],
