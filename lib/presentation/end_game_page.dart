@@ -23,15 +23,63 @@ class EndGame extends StatelessWidget {
                 fit: BoxFit.fill, image: AssetImage('lib/assets/town.jpg')),
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "$won הקבוצה המנצח היא",
+                "הקבוצה המנצחת היא",
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 35,
-                    fontWeight: FontWeight.bold),
+                  color: Colors.white,
+                  fontSize: 35,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                        // bottomLeft
+                        offset: Offset(-1.5, -1.5),
+                        color: Colors.black),
+                    Shadow(
+                        // bottomRight
+                        offset: Offset(1.5, -1.5),
+                        color: Colors.black),
+                    Shadow(
+                        // topRight
+                        offset: Offset(1.5, 1.5),
+                        color: Colors.black),
+                    Shadow(
+                        // topLeft
+                        offset: Offset(-1.5, 1.5),
+                        color: Colors.black),
+                  ],
+                ),
               ),
-              SizedBox(height:20),
+              Text(
+                "$won",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.green,
+                  fontSize: 35,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                        // bottomLeft
+                        offset: Offset(-1.5, -1.5),
+                        color: Colors.black),
+                    Shadow(
+                        // bottomRight
+                        offset: Offset(1.5, -1.5),
+                        color: Colors.black),
+                    Shadow(
+                        // topRight
+                        offset: Offset(1.5, 1.5),
+                        color: Colors.black),
+                    Shadow(
+                        // topLeft
+                        offset: Offset(-1.5, 1.5),
+                        color: Colors.black),
+                  ],
+                ),
+              ),
+              SizedBox(height: 40),
               Container(
                 height: 50.0,
                 margin: EdgeInsets.all(10),

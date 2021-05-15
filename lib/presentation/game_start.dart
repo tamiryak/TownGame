@@ -193,8 +193,8 @@ class _GameStartState extends State<GameStart> {
                                 var turn = dataSnapshot
                                     .data['turn']; //var of the current turn
                                 //check end if some group won
-                                if ((numOfKillersLeft == 0) ||
-                                    (endGame == true)) turn = 7;
+                                if (numOfKillersLeft == 0) turn = 7;
+                                if (endGame == true) turn = 5;
                                 if (numOfKillersLeft >= 1 &&
                                     numOfPlayersLeft == 1) turn = 6;
                                 //----------------------------
@@ -373,107 +373,96 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
                               origin: Offset(0, 0),
                               children: playersAlive
                                   .map<Widget>((DocumentSnapshot player) {
-                                return player['killed'] ==
-                                        false //if player was killed - avatar with red x
-                                    ? Container(
-                                        height: 100,
-                                        width: 100,
-                                        child: Column(
-                                          children: [
-                                            Text(player['playerName'],
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    shadows: [
-                                                      Shadow(
-                                                          // bottomLeft
-                                                          offset: Offset(
-                                                              -1.5, -1.5),
-                                                          color: Colors.black),
-                                                      Shadow(
-                                                          // bottomRight
-                                                          offset:
-                                                              Offset(1.5, -1.5),
-                                                          color: Colors.black),
-                                                      Shadow(
-                                                          // topRight
-                                                          offset:
-                                                              Offset(1.5, 1.5),
-                                                          color: Colors.black),
-                                                      Shadow(
-                                                          // topLeft
-                                                          offset:
-                                                              Offset(-1.5, 1.5),
-                                                          color: Colors.black),
-                                                    ],
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                            new Container(
-                                                //else - pressable avatar
-                                                width: 60,
-                                                height: 60,
-                                                child: InkWell(
-                                                  //on player pressed - admin press on someone (kill the player)
-                                                  onTap: () async {
-                                                    await FirebaseFirestore
-                                                        .instance
-                                                        .collection('Games')
-                                                        .doc(currentGame.gameId)
-                                                        .collection('Players')
-                                                        .where('playerName',
-                                                            isEqualTo: player[
-                                                                'playerName'])
-                                                        .limit(1)
-                                                        .get()
-                                                        .then((value) {
-                                                      (value.docs[0])
-                                                          .reference
-                                                          .update(
-                                                              {'killed': true});
-                                                      if (value.docs[0]
-                                                              ['role'] ==
-                                                          'doctor')
-                                                        doctorIsDead = true;
-                                                      else if (value.docs[0]
-                                                              ['role'] ==
-                                                          'cop')
-                                                        copIsDead = true;
-                                                    });
-                                                    changeturn(); //moving to night mode
-                                                  },
-                                                  child: ClipRRect(
-                                                    //avatar of player
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            100),
-                                                    child: Container(
-                                                      decoration: (player[
-                                                                  'avatar'] !=
-                                                              null)
-                                                          ? new BoxDecoration(
-                                                              color:
-                                                                  Colors.brown,
-                                                              image:
-                                                                  new DecorationImage(
-                                                                image: new AssetImage(
-                                                                    "lib/assets/avatars/${player['avatar'] + 1}.png"),
-                                                                fit:
-                                                                    BoxFit.fill,
-                                                              ))
-                                                          : BoxDecoration(
-                                                              color:
-                                                                  Colors.brown),
-                                                    ),
-                                                  ),
-                                                )),
-                                          ],
-                                        ),
-                                      )
-                                    : KilledCircle(
-                                        //if the player was killed - red x circle container
-                                        name: player['playerName'],
-                                        avatar: player['avatar'],
-                                        numOfP: playersAlive.length,
-                                      );
+                                if (player['killed'] ==
+                                    false) //if player was killed - avatar with red x
+                                  return Container(
+                                    height: 100,
+                                    width: 100,
+                                    child: Column(
+                                      children: [
+                                        Text(player['playerName'],
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                shadows: [
+                                                  Shadow(
+                                                      // bottomLeft
+                                                      offset:
+                                                          Offset(-1.5, -1.5),
+                                                      color: Colors.black),
+                                                  Shadow(
+                                                      // bottomRight
+                                                      offset: Offset(1.5, -1.5),
+                                                      color: Colors.black),
+                                                  Shadow(
+                                                      // topRight
+                                                      offset: Offset(1.5, 1.5),
+                                                      color: Colors.black),
+                                                  Shadow(
+                                                      // topLeft
+                                                      offset: Offset(-1.5, 1.5),
+                                                      color: Colors.black),
+                                                ],
+                                                fontWeight: FontWeight.bold)),
+                                        new Container(
+                                            //else - pressable avatar
+                                            width: 60,
+                                            height: 60,
+                                            child: InkWell(
+                                              //on player pressed - admin press on someone (kill the player)
+                                              onTap: () async {
+                                                await FirebaseFirestore.instance
+                                                    .collection('Games')
+                                                    .doc(currentGame.gameId)
+                                                    .collection('Players')
+                                                    .where('playerName',
+                                                        isEqualTo: player[
+                                                            'playerName'])
+                                                    .limit(1)
+                                                    .get()
+                                                    .then((value) {
+                                                  (value.docs[0])
+                                                      .reference
+                                                      .update({'killed': true});
+                                                  if (value.docs[0]['role'] ==
+                                                      'doctor')
+                                                    doctorIsDead = true;
+                                                  else if (value.docs[0]
+                                                          ['role'] ==
+                                                      'cop') copIsDead = true;
+                                                });
+                                                changeturn(); //moving to night mode
+                                              },
+                                              child: ClipRRect(
+                                                //avatar of player
+                                                borderRadius:
+                                                    BorderRadius.circular(100),
+                                                child: Container(
+                                                  decoration: (player[
+                                                              'avatar'] !=
+                                                          null)
+                                                      ? new BoxDecoration(
+                                                          color: Colors.brown,
+                                                          image:
+                                                              new DecorationImage(
+                                                            image: new AssetImage(
+                                                                "lib/assets/avatars/${player['avatar'] + 1}.png"),
+                                                            fit: BoxFit.fill,
+                                                          ))
+                                                      : BoxDecoration(
+                                                          color: Colors.brown),
+                                                ),
+                                              ),
+                                            )),
+                                      ],
+                                    ),
+                                  );
+                                else
+                                  return KilledCircle(
+                                    //if the player was killed - red x circle container
+                                    name: player['playerName'],
+                                    avatar: player['avatar'],
+                                    numOfP: playersAlive.length,
+                                  );
                               }).toList());
                         }
                       }
@@ -518,7 +507,7 @@ class KilledCircle extends StatelessWidget {
     @required this.name,
     this.avatar,
     this.numOfP,
-  }) : super(key: key);
+  });
   final String name;
   final int avatar;
   final int numOfP;
@@ -556,7 +545,8 @@ class KilledCircle extends StatelessWidget {
               width: 60,
               height: 60,
               child: Stack(
-                alignment: Alignment.center,
+                //alignment: AlignmentDirectional.center,
+                fit: StackFit.expand,
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(100),
@@ -570,11 +560,9 @@ class KilledCircle extends StatelessWidget {
                                 fit: BoxFit.fill,
                               ))
                           : BoxDecoration(color: Colors.brown),
+                      child: Center(child: Icon(Icons.close,color: Colors.red,size: 60,))
                     ),
                   ),
-                  Text("x",
-                      style:
-                          TextStyle(color: Colors.red, fontSize: 800 / numOfP))
                 ],
               )),
         ],
@@ -669,8 +657,9 @@ class _KillState extends State<Kill> {
                               children: playersAlive
                                   .map<Widget>((DocumentSnapshot player) {
                                 if (player['playerName'] != currentUser.name) {
-                                  return player['killed'] == false
-                                      ? Container(
+                                if (player['killed'] ==
+                                    false) //if player was killed - avatar with red x
+                                  return Container(
                                           height: 100,
                                           width: 100,
                                           child: Column(
@@ -757,8 +746,8 @@ class _KillState extends State<Kill> {
                                                   )),
                                             ],
                                           ),
-                                        )
-                                      : KilledCircle(
+                                        );
+                                      else return KilledCircle(
                                           name: player['playerName'],
                                           avatar: player['avatar'],
                                           numOfP: playersAlive.length,
@@ -784,7 +773,7 @@ class Heal extends StatefulWidget {
 }
 
 bool isDoctor;
-bool doctorSucceed = false;
+bool doctorSucceed;
 String killerPick;
 
 class _HealState extends State<Heal> {
@@ -863,10 +852,9 @@ class _HealState extends State<Heal> {
                               origin: Offset(0, 0),
                               children: playersAlive
                                   .map<Widget>((DocumentSnapshot player) {
-                                return
-                                    //creating the circle list
-                                    player['killed'] == false
-                                        ? Container(
+                                if (player['killed'] ==
+                                    false) //if player was killed - avatar with red x
+                                  return Container(
                                             width: 100,
                                             height: 100,
                                             child: Column(
@@ -915,15 +903,14 @@ class _HealState extends State<Heal> {
                                                                 .gameId)
                                                             .get()
                                                             .then((snap) {
-                                                          if (snap[
-                                                                  'killerPick'] ==
+                                                          if (killerPick ==
                                                               player[
                                                                   'playerName']) {
                                                             setState(() {
                                                               doctorSucceed =
                                                                   true;
-                                                              killerPick = snap[
-                                                                  'killerPick'];
+                                                              // killerPick = snap[
+                                                              //     'killerPick'];
                                                             });
                                                           }
                                                         });
@@ -966,8 +953,8 @@ class _HealState extends State<Heal> {
                                                     )),
                                               ],
                                             ),
-                                          )
-                                        : KilledCircle(
+                                          );
+                                        else return KilledCircle(
                                             name: player['playerName'],
                                             avatar: player['avatar'],
                                             numOfP: playersAlive.length,
@@ -1073,8 +1060,9 @@ class _InvestigateState extends State<Investigate> {
                                     //creating the circle list for each player
                                     if (player['playerName'] !=
                                         currentUser.name) {
-                                      return player['killed'] == false
-                                          ? Container(
+                                if (player['killed'] ==
+                                    false) //if player was killed - avatar with red x
+                                  return Container(
                                               width: 100,
                                               height: 100,
                                               child: Column(
@@ -1231,8 +1219,8 @@ class _InvestigateState extends State<Investigate> {
                                                       )),
                                                 ],
                                               ),
-                                            )
-                                          : KilledCircle(
+                                            );
+                                          else return KilledCircle(
                                               name: player['playerName'],
                                               avatar: player['avatar'],
                                               numOfP: playersAlive.length,
