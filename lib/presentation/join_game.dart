@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:town_game/core/current_user.dart';
 import 'package:town_game/core/di.dart';
@@ -42,7 +41,6 @@ bool snackBar = false;
 class _JoinGameState extends State<JoinGame> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     isJoining = false;
   }

@@ -63,6 +63,7 @@ flutter:
     - assets/audio/background_music.mp3
     - lib/assets/daytonight.gif
     - lib/assets/nighttoday.gif
+    - lib/assets/loading.gif
     - lib/assets/night.jpg
     - lib/assets/card.jpg
     - assets/sound/night.mp3

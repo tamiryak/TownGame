@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +46,6 @@ final CurrentUser currentUser = getIt();
 class _TownState extends State<Town> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     FlameAudio.bgm.initialize();
     if (soundOn)
@@ -59,7 +57,6 @@ class _TownState extends State<Town> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     FlameAudio.bgm.dispose();
   }

@@ -85,11 +85,12 @@ class EndGame extends StatelessWidget {
                 margin: EdgeInsets.all(10),
                 child: RaisedButton(
                   //button for entering to game
-                  onPressed: () async {
+                  onPressed: () async  {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
                     Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (BuildContext context) => Town()));
+                            builder: (BuildContext context) => Town()));});
                   },
                   shape: RoundedRectangleBorder(
                       //button style

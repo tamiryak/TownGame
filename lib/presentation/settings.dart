@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,12 +20,7 @@ final CurrentGame currentGame = getIt();
 final CurrentUser currentUser = getIt();
 
 class _SettingsAppState extends State<SettingsApp> {
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
 
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

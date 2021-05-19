@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:town_game/core/current_user.dart';
 import 'package:town_game/core/di.dart';
 import 'game.dart';
@@ -42,7 +40,6 @@ bool isCreating = false;
 class _CreateGameState extends State<CreateGame> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     isCreating = false;
   }
@@ -254,7 +251,8 @@ class _CreateGameState extends State<CreateGame> {
       'numKillers': numKillers,
       'endGame': false,
       // 'timerStart':false,
-      'turn': 0
+      'turn': 0,
+      'ready':0
     }).then((docRef) {
       currentGame.gameId = docRef.id; //save the id of the game for joining game
       currentGame.numOfKillers = numKillers.round();

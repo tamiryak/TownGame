@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:town_game/core/current_game.dart';
 import 'package:town_game/core/current_user.dart';
 import 'package:town_game/core/di.dart';
-import 'package:town_game/presentation/join_game.dart';
 import 'package:town_game/widgets/custom_list_tile.dart';
 
 import 'game_start.dart';
@@ -24,7 +22,6 @@ bool isStarting = false;
 class _GameState extends State<Game> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     isStarting = false;
   }
@@ -128,9 +125,9 @@ class _GameState extends State<Game> {
                           } else {
                             var players =
                                 dataSnapshot.data.docs; //get the players list
-
                             numOfPlayers = players.length;
                             currentGame.numOfPlayers = numOfPlayers;
+                            
                             return new ListView(
                                 children: players
                                     .map<Widget>((DocumentSnapshot player) {
