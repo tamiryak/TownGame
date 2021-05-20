@@ -183,7 +183,8 @@ class _JoinGameState extends State<JoinGame> {
         'playerName': playerName,
         'role': 'citizen',
         'killed': false,
-        'avatar': currentUser.avatar
+        'avatar': currentUser.avatar,
+        'ready':false
       });
 
     await FirebaseFirestore

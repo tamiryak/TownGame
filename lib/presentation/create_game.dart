@@ -252,7 +252,7 @@ class _CreateGameState extends State<CreateGame> {
       'endGame': false,
       // 'timerStart':false,
       'turn': 0,
-      'ready':0
+      'ready':false
     }).then((docRef) {
       currentGame.gameId = docRef.id; //save the id of the game for joining game
       currentGame.numOfKillers = numKillers.round();
@@ -274,7 +274,8 @@ class _CreateGameState extends State<CreateGame> {
       'playerName': playerName,
       'role': 'citizen',
       'killed': false,
-      'avatar': currentUser.avatar
+      'avatar': currentUser.avatar,
+      'ready':false
     });
   }
 }

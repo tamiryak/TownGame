@@ -105,8 +105,8 @@ class _GameStartState extends State<GameStart> {
                   'role']; //the players gets their roles that was drawen for them
               return Scaffold(
                   extendBodyBehindAppBar: true,
-                  appBar: (starting)
-                      ? AppBar(
+                  appBar:
+                      AppBar(
                           actions: [
                               Container(
                                 child: currentGame.isAdmin
@@ -176,7 +176,7 @@ class _GameStartState extends State<GameStart> {
                                   flipOnTouch: true,
                                 )),
                           ))
-                      : null,
+                      ,
                   body: StreamBuilder(
                           //stream builder of the game turns
                           stream: FirebaseFirestore.instance
@@ -204,23 +204,22 @@ class _GameStartState extends State<GameStart> {
                                     'endGame']; //check if endgame situation
                                 var turn = dataSnapshot
                                     .data['turn']; //var of the current turn
-                                int readyNum = dataSnapshot.data['ready'];
                                 if (!ready) {
-                                  checkReady(readyNum);
+                                  checkReady();
                                 }
+                                checkAll();
+                                starting = dataSnapshot.data['ready'];
+
                                 //check end if some group won
                                 if (numOfKillersLeft == 0) turn = 7;
                                 if (endGame == true) turn = 5;
-                                if (numOfKillersLeft >= 1 &&
-                                    numOfPlayersLeft == 1) turn = 6;
+                                if (numOfKillersLeft + 1 == numOfPlayersLeft)
+                                  turn = 6;
                                 //----------------------------
-                                if (readyNum == currentGame.numOfPlayers) {
+                                if (starting) {
                                   switch (turn) {
                                     case 1:
                                       return Day(); //if day turn (admin incharge)
-                                      setState(() {
-                                        starting = true;
-                                      });
                                       break;
                                     case 2:
                                       return Kill(); //if kill turn (killer incharge)
@@ -290,13 +289,33 @@ class _GameStartState extends State<GameStart> {
         .update({'turn': turn});
   }
 
-  Future<void> checkReady(int readyNum) async {
+  Future<void> checkReady() async {
     ready = true;
-    readyNum++;
-    await FirebaseFirestore.instance
+    var inst = FirebaseFirestore.instance
         .collection('Games')
         .doc(currentGame.gameId)
-        .update({'ready': readyNum});
+        .collection('Players')
+        .where('playerName', isEqualTo: currentUser.name)
+        .get();
+    await inst
+        .then((value) => (value.docs[0]).reference.update({'ready': true}));
+  }
+
+  Future<void> checkAll() async {
+    var inst = await FirebaseFirestore.instance
+        .collection('Games')
+        .doc(currentGame.gameId)
+        .collection('Players')
+        .where('ready', isEqualTo: false)
+        .get();
+
+    if (!starting) if (inst.docs.isEmpty) {
+      var inst2 = FirebaseFirestore.instance
+          .collection('Games')
+          .doc(currentGame.gameId);
+
+      inst2.update({'ready': true});
+    }
   }
 }
 
