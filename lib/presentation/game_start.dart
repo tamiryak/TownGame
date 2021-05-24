@@ -11,7 +11,6 @@ import 'package:town_game/core/current_game.dart';
 import 'package:town_game/core/current_user.dart';
 import 'package:town_game/core/di.dart';
 import 'package:town_game/presentation/end_game_page.dart';
-import 'package:town_game/presentation/game.dart';
 import 'package:town_game/widgets/loading.dart';
 import 'package:town_game/widgets/timer.dart';
 
@@ -49,6 +48,13 @@ class _GameStartState extends State<GameStart> {
     players = games.collection('Players');
     numOfKillersLeft = currentGame.numOfKillers;
     numOfPlayersLeft = currentGame.numOfPlayers;
+
+    FirebaseFirestore.instance
+        .collection('Games')
+        .doc(currentGame.gameId)
+        .update(
+            {'playersAlive': numOfPlayersLeft, 'numKillers': numOfKillersLeft});
+
     ready = false;
     starting = false;
     if (Platform.isIOS) {
@@ -105,78 +111,74 @@ class _GameStartState extends State<GameStart> {
                   'role']; //the players gets their roles that was drawen for them
               return Scaffold(
                   extendBodyBehindAppBar: true,
-                  appBar:
-                      AppBar(
-                          actions: [
-                              Container(
-                                child: currentGame.isAdmin
-                                    ? ElevatedButton(
-                                        //end game button
-                                        child: Text("End Game".toUpperCase(),
-                                            style: TextStyle(fontSize: 14)),
-                                        style: ButtonStyle(
-                                            foregroundColor:
-                                                MaterialStateProperty.all<Color>(
-                                                    Colors.white),
-                                            backgroundColor:
-                                                MaterialStateProperty.all<Color>(
-                                                    Colors.red),
-                                            shape: MaterialStateProperty.all<
-                                                    RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.zero,
-                                                    side:
-                                                        BorderSide(color: Colors.red)))),
-                                        onPressed: () async {
-                                          await FirebaseFirestore.instance
-                                              .collection('Games')
-                                              .doc(currentGame.gameId)
-                                              .update({
-                                            'endGame': true
-                                          }); //ending the game on firebase
-                                        })
-                                    : Container(),
-                              )
-                            ],
-                          //appbar style
-                          leadingWidth: 80,
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                          leading: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                                height: 50,
-                                width: 50,
-                                child: FlipCard(
-                                  back: Container(
-                                    //card of the player
-                                    width: 10,
-                                    height: 10,
-                                    decoration: BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(4)),
-                                      color: Colors.white,
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                          currentUser.role == null
-                                              ? ""
-                                              : currentUser.role +
-                                                  '\n' +
-                                                  (shape..shuffle()).first,
-                                          style: TextStyle(
-                                              color: Colors.red, fontSize: 16),
-                                          textAlign: TextAlign.center),
-                                    ),
-                                  ),
-                                  front: Center(
-                                      child:
-                                          Image.asset('lib/assets/card.jpg')),
-                                  flipOnTouch: true,
-                                )),
-                          ))
-                      ,
+                  appBar: AppBar(
+                      actions: [
+                        Container(
+                          child: currentGame.isAdmin
+                              ? ElevatedButton(
+                                  //end game button
+                                  child: Text("End Game".toUpperCase(),
+                                      style: TextStyle(fontSize: 14)),
+                                  style: ButtonStyle(
+                                      foregroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.white),
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.red),
+                                      shape: MaterialStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.zero,
+                                              side: BorderSide(
+                                                  color: Colors.red)))),
+                                  onPressed: () async {
+                                    await FirebaseFirestore.instance
+                                        .collection('Games')
+                                        .doc(currentGame.gameId)
+                                        .update({
+                                      'endGame': true
+                                    }); //ending the game on firebase
+                                  })
+                              : Container(),
+                        )
+                      ],
+                      //appbar style
+                      leadingWidth: 80,
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      leading: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                            height: 50,
+                            width: 50,
+                            child: FlipCard(
+                              back: Container(
+                                //card of the player
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(4)),
+                                  color: Colors.white,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                      currentUser.role == null
+                                          ? ""
+                                          : currentUser.role +
+                                              '\n' +
+                                              (shape..shuffle()).first,
+                                      style: TextStyle(
+                                          color: Colors.red, fontSize: 16),
+                                      textAlign: TextAlign.center),
+                                ),
+                              ),
+                              front: Center(
+                                  child: Image.asset('lib/assets/card.jpg')),
+                              flipOnTouch: true,
+                            )),
+                      )),
                   body: StreamBuilder(
                           //stream builder of the game turns
                           stream: FirebaseFirestore.instance
@@ -204,6 +206,10 @@ class _GameStartState extends State<GameStart> {
                                     'endGame']; //check if endgame situation
                                 var turn = dataSnapshot
                                     .data['turn']; //var of the current turn
+                                numOfKillersLeft =
+                                    dataSnapshot.data['numKillers'];
+                                numOfPlayersLeft =
+                                    dataSnapshot.data['playersAlive'];
                                 if (!ready) {
                                   checkReady();
                                 }
@@ -315,6 +321,9 @@ class _GameStartState extends State<GameStart> {
           .doc(currentGame.gameId);
 
       inst2.update({'ready': true});
+      setState(() {
+        starting = true;
+      });
     }
   }
 }
@@ -398,9 +407,7 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
                 )
               : Container(),
         ),
-        isTimer &&
-                currentGame
-                    .isAdmin //show the players only if admin (admin is able to choose after vote)
+        isTimer //show the players only if admin (admin is able to choose after vote)
             ? Positioned(
                 bottom: MediaQuery.of(context).size.height * 0.10,
                 child: StreamBuilder(
@@ -465,27 +472,51 @@ class _DayState extends State<Day> with TickerProviderStateMixin {
                                             child: InkWell(
                                               //on player pressed - admin press on someone (kill the player)
                                               onTap: () async {
-                                                await FirebaseFirestore.instance
-                                                    .collection('Games')
-                                                    .doc(currentGame.gameId)
-                                                    .collection('Players')
-                                                    .where('playerName',
-                                                        isEqualTo: player[
-                                                            'playerName'])
-                                                    .limit(1)
-                                                    .get()
-                                                    .then((value) {
-                                                  (value.docs[0])
-                                                      .reference
-                                                      .update({'killed': true});
-                                                  if (value.docs[0]['role'] ==
-                                                      'doctor')
-                                                    doctorIsDead = true;
-                                                  else if (value.docs[0]
-                                                          ['role'] ==
-                                                      'cop') copIsDead = true;
-                                                });
-                                                changeturn(); //moving to night mode
+                                                if (currentGame.isAdmin) {
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection('Games')
+                                                      .doc(currentGame.gameId)
+                                                      .collection('Players')
+                                                      .where('playerName',
+                                                          isEqualTo: player[
+                                                              'playerName'])
+                                                      .limit(1)
+                                                      .get()
+                                                      .then((value) {
+                                                    (value.docs[0])
+                                                        .reference
+                                                        .update(
+                                                            {'killed': true});
+                                                    if (value.docs[0]['role'] ==
+                                                        'doctor') {
+                                                      doctorIsDead = true;
+                                                      value.docs[0].reference
+                                                          .update({
+                                                        'doctorSucceed': false
+                                                      });
+                                                      doctorSucceed = false;
+                                                    } else if (value.docs[0]
+                                                            ['role'] ==
+                                                        'cop')
+                                                      copIsDead = true;
+                                                    else if (value.docs[0]
+                                                            ['role'] ==
+                                                        'killer')
+                                                      numOfKillersLeft--;
+                                                    numOfPlayersLeft--;
+                                                    FirebaseFirestore.instance
+                                                        .collection('Games')
+                                                        .doc(currentGame.gameId)
+                                                        .update({
+                                                      'playersAlive':
+                                                          numOfPlayersLeft,
+                                                      'numKillers':
+                                                          numOfKillersLeft
+                                                    });
+                                                  });
+                                                  changeturn(); //moving to night mode
+                                                }
                                               },
                                               child: ClipRRect(
                                                 //avatar of player
@@ -763,6 +794,38 @@ class _KillState extends State<Kill> {
                                                     'killerPick': player[
                                                         'playerName'] //saving the killer pick
                                                   });
+                                                  if (doctorIsDead &&
+                                                      copIsDead) {
+                                                    await FirebaseFirestore
+                                                        .instance
+                                                        .collection('Games')
+                                                        .doc(currentGame.gameId)
+                                                        .collection('Players')
+                                                        .where('playerName',
+                                                            isEqualTo: player[
+                                                                'playerName'])
+                                                        .limit(1)
+                                                        .get()
+                                                        .then((value) {
+                                                      value.docs[0].reference
+                                                          .update(
+                                                              {'killed': true});
+                                                      if (value.docs[0]
+                                                              ['role'] ==
+                                                          'killer')
+                                                        numOfKillersLeft--;
+                                                    });
+                                                    numOfPlayersLeft--;
+                                                    FirebaseFirestore.instance
+                                                        .collection('Games')
+                                                        .doc(currentGame.gameId)
+                                                        .update({
+                                                      'playersAlive':
+                                                          numOfPlayersLeft,
+                                                      'numKillers':
+                                                          numOfKillersLeft
+                                                    });
+                                                  }
                                                   await FirebaseFirestore
                                                       .instance
                                                       .collection('Games')
@@ -936,23 +999,24 @@ class _HealState extends State<Heal> {
                                             height: 60,
                                             child: InkWell(
                                               onTap: () async {
-                                                //if doctor pick player
-                                                await FirebaseFirestore
-                                                    .instance //check if player was killed by the killer
-                                                    .collection('Games')
-                                                    .doc(currentGame.gameId)
-                                                    .get()
-                                                    .then((snap) {
-                                                  if (killerPick ==
-                                                      player['playerName']) {
-                                                    setState(() {
-                                                      doctorSucceed = true;
-                                                      // killerPick = snap[
-                                                      //     'killerPick'];
-                                                    });
-                                                  }
-                                                });
-
+                                                if (!doctorIsDead) {
+                                                  //if doctor pick player
+                                                  await FirebaseFirestore
+                                                      .instance //check if player was killed by the killer
+                                                      .collection('Games')
+                                                      .doc(currentGame.gameId)
+                                                      .get()
+                                                      .then((snap) {
+                                                    if (killerPick ==
+                                                        player['playerName']) {
+                                                      setState(() {
+                                                        doctorSucceed = true;
+                                                        // killerPick = snap[
+                                                        //     'killerPick'];
+                                                      });
+                                                    }
+                                                  });
+                                                }
                                                 await FirebaseFirestore
                                                     .instance //save rather doctor succeed or not
                                                     .collection('Games')
@@ -961,6 +1025,38 @@ class _HealState extends State<Heal> {
                                                   'turn': 4,
                                                   'doctorSucceed': doctorSucceed
                                                 });
+
+                                                if ((!doctorSucceed) &&
+                                                    copIsDead) {
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection('Games')
+                                                      .doc(currentGame.gameId)
+                                                      .collection('Players')
+                                                      .where('playerName',
+                                                          isEqualTo: player[
+                                                              'playerName'])
+                                                      .limit(1)
+                                                      .get()
+                                                      .then((value) {
+                                                    value.docs[0].reference
+                                                        .update(
+                                                            {'killed': true});
+                                                    if (value.docs[0]['role'] ==
+                                                        'killer')
+                                                      numOfKillersLeft--;
+                                                  });
+                                                  numOfPlayersLeft--;
+                                                  FirebaseFirestore.instance
+                                                      .collection('Games')
+                                                      .doc(currentGame.gameId)
+                                                      .update({
+                                                    'playersAlive':
+                                                        numOfPlayersLeft,
+                                                    'numKillers':
+                                                        numOfKillersLeft
+                                                  });
+                                                }
                                               },
                                               child: ClipRRect(
                                                 //each player gets avatar
@@ -1156,7 +1252,8 @@ class _InvestigateState extends State<Investigate> {
                                                                       copRight =
                                                                           true
                                                                   });
-                                                      if (!doctorSucceed) {
+                                                      if (!doctorSucceed ||
+                                                          doctorIsDead) {
                                                         //check if doctor was succeed or not
                                                         await FirebaseFirestore
                                                             .instance
@@ -1190,6 +1287,19 @@ class _InvestigateState extends State<Investigate> {
                                                               'killer')
                                                             numOfKillersLeft--;
                                                           numOfPlayersLeft--; //reducing number of players left
+
+                                                          FirebaseFirestore
+                                                              .instance
+                                                              .collection(
+                                                                  'Games')
+                                                              .doc(currentGame
+                                                                  .gameId)
+                                                              .update({
+                                                            'playersAlive':
+                                                                numOfPlayersLeft,
+                                                            'numKillers':
+                                                                numOfKillersLeft
+                                                          });
                                                         });
                                                       }
                                                       setState(() {
@@ -1199,6 +1309,10 @@ class _InvestigateState extends State<Investigate> {
                                                       });
                                                       setState(() {
                                                         picked = true;
+                                                        numOfKillersLeft =
+                                                            numOfKillersLeft;
+                                                        numOfPlayersLeft =
+                                                            numOfPlayersLeft;
                                                       });
                                                       Future.delayed(
                                                           Duration(seconds: 2),
