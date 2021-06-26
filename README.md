@@ -6,18 +6,18 @@ A social deduction card game made with Flutter. This game can run on Android and
 The game models a conflict between two groups: an informed minority, and an uninformed majority. At the start of the game, each player is secretly assigned a role affiliated with one of these teams. The game has two alternating phases: first, a night role, during which those with night killing powers may covertly kill other players, and second, a day role, in which surviving players debate the identities of players and vote to eliminate a suspect. The game continues until a faction achieves its win condition; for the village, this usually means eliminating the evil minority, while for the minority this usually means reaching numerical parity with the village and eliminating any rival evil groups.
 
 *main page
-![image](https://user-images.githubusercontent.com/45327624/123507867-bf5c9c00-d674-11eb-9bd3-e8c5e8787aa2.png)
-![image](https://user-images.githubusercontent.com/45327624/123507872-c4215000-d674-11eb-8d20-c51c6f1a249e.png)
-![image](https://user-images.githubusercontent.com/45327624/123507875-c71c4080-d674-11eb-9200-e580475bc31a.png)
-![image](https://user-images.githubusercontent.com/45327624/123507876-c84d6d80-d674-11eb-98e0-8d7c635f40da.png)
-![image](https://user-images.githubusercontent.com/45327624/123507921-0480ce00-d675-11eb-924d-90b27b38563b.png)
-![image](https://user-images.githubusercontent.com/45327624/123507982-63464780-d675-11eb-9fa8-73b2f24ff46e.png)
+![image](https://user-images.githubusercontent.com/45327624/123507867-bf5c9c00-d674-11eb-9bd3-e8c5e8787aa2.png){:height="700px" width="400px"}
+![image](https://user-images.githubusercontent.com/45327624/123507872-c4215000-d674-11eb-8d20-c51c6f1a249e.png){:height="700px" width="400px"}
+![image](https://user-images.githubusercontent.com/45327624/123507875-c71c4080-d674-11eb-9200-e580475bc31a.png){:height="700px" width="400px"}
+![image](https://user-images.githubusercontent.com/45327624/123507876-c84d6d80-d674-11eb-98e0-8d7c635f40da.png){:height="700px" width="400px"}
+![image](https://user-images.githubusercontent.com/45327624/123507921-0480ce00-d675-11eb-924d-90b27b38563b.png){:height="700px" width="400px"}
+![image](https://user-images.githubusercontent.com/45327624/123507982-63464780-d675-11eb-9fa8-73b2f24ff46e.png){:height="700px" width="400px"}
 
 all players debate timer
-![image](https://user-images.githubusercontent.com/45327624/123508036-a7394c80-d675-11eb-81fa-0b28188f7382.png)
+![image](https://user-images.githubusercontent.com/45327624/123508036-a7394c80-d675-11eb-81fa-0b28188f7382.png){:height="700px" width="400px"}
 
 *killer can choose discreet who to kill
-![WhatsApp Image 2021-06-26 at 11 57 39](https://user-images.githubusercontent.com/45327624/123508052-c0da9400-d675-11eb-937f-664f522960ba.jpeg)
+![WhatsApp Image 2021-06-26 at 11 57 39](https://user-images.githubusercontent.com/45327624/123508052-c0da9400-d675-11eb-937f-664f522960ba.jpeg){:height="700px" width="400px"}
 
 
 
