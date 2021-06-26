@@ -9,10 +9,21 @@ The game models a conflict between two groups: an informed minority, and an unin
 ♥ main page
 
 <img src="https://user-images.githubusercontent.com/45327624/123507867-bf5c9c00-d674-11eb-9bd3-e8c5e8787aa2.png" width="200" height="400">
+
+♠ creating game page
+
 <img src="https://user-images.githubusercontent.com/45327624/123507875-c71c4080-d674-11eb-9200-e580475bc31a.png" width="200" height="400">
-<img src="https://user-images.githubusercontent.com/45327624/123507875-c71c4080-d674-11eb-9200-e580475bc31a.png" width="200" height="400">
+
+♦ join game page 
+
 <img src="https://user-images.githubusercontent.com/45327624/123507876-c84d6d80-d674-11eb-98e0-8d7c635f40da.png" width="200" height="400">
+
+♣ waiting room
+
 <img src="https://user-images.githubusercontent.com/45327624/123507921-0480ce00-d675-11eb-924d-90b27b38563b.png" width="200" height="400">
+
+♥ loading page
+
 <img src="https://user-images.githubusercontent.com/45327624/123507982-63464780-d675-11eb-9fa8-73b2f24ff46e.png" width="200" height="400">
 
 ♠ all players debate timer
@@ -31,6 +42,7 @@ The game models a conflict between two groups: an informed minority, and an unin
 ♦ Dart
 
 ✅ Tested on: 
+
 ♣ Pixel 3 with Android 10.0 OS
 
 ♣ IOS 11.0
@@ -49,5 +61,5 @@ The game models a conflict between two groups: an informed minority, and an unin
 more feature like vote will be published in a later version.
 
 ## 📧 Contact us 
-For any other questions,reviews and etc, contact one of our group friends 
+For any other questions,reviews and etc, contact me: 
 * Tamir - TamirYakov@gmail.com
