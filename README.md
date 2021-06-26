@@ -32,13 +32,18 @@ The game models a conflict between two groups: an informed minority, and an unin
 
 ✅ Tested on: 
 ♣ Pixel 3 with Android 10.0 OS
+
 ♣ IOS 11.0
+
 ♣ Should be compatible with other Android/IOS version and screens sizes.
 
 ## 📢 Main Features 
 ♥ create room with your friends online
+
 ♥ start a game with your own settings
+
 ♥ unique avatar for each player
+
 ♥ easy and discreet way for killer pick
 
 more feature like vote will be published in a later version.
