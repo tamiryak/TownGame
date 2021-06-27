@@ -55,8 +55,9 @@ class _GameStartState extends State<GameStart> {
         .update(
             {'playersAlive': numOfPlayersLeft, 'numKillers': numOfKillersLeft});
 
-    ready = false;
-    starting = false;
+    Future.delayed(Duration(seconds: 4), () {
+      checkAll();
+    });
     if (Platform.isIOS) {
       audioCache.fixedPlayer?.startHeadlessService();
       advancedPlayer.startHeadlessService();
@@ -210,17 +211,15 @@ class _GameStartState extends State<GameStart> {
                                     dataSnapshot.data['numKillers'];
                                 numOfPlayersLeft =
                                     dataSnapshot.data['playersAlive'];
-                                if (!ready) {
-                                  checkReady();
-                                }
-                                checkAll();
+
                                 starting = dataSnapshot.data['ready'];
 
                                 //check end if some group won
-                                if (numOfKillersLeft == 0) turn = 7;
+                                if (numOfKillersLeft == 0)
+                                  turn = 7;
+                                else if (numOfPlayersLeft - numOfKillersLeft <=
+                                    1) turn = 6;
                                 if (endGame == true) turn = 5;
-                                if (numOfKillersLeft + 1 == numOfPlayersLeft)
-                                  turn = 6;
                                 //----------------------------
                                 if (starting) {
                                   switch (turn) {
@@ -280,6 +279,7 @@ class _GameStartState extends State<GameStart> {
                                 }
                               }
                             }
+                            return Container();
                           }) ??
                       Container());
             }
@@ -308,23 +308,13 @@ class _GameStartState extends State<GameStart> {
   }
 
   Future<void> checkAll() async {
-    var inst = await FirebaseFirestore.instance
-        .collection('Games')
-        .doc(currentGame.gameId)
-        .collection('Players')
-        .where('ready', isEqualTo: false)
-        .get();
+    var inst2 =
+        FirebaseFirestore.instance.collection('Games').doc(currentGame.gameId);
 
-    if (!starting) if (inst.docs.isEmpty) {
-      var inst2 = FirebaseFirestore.instance
-          .collection('Games')
-          .doc(currentGame.gameId);
-
-      inst2.update({'ready': true});
-      setState(() {
-        starting = true;
-      });
-    }
+    inst2.update({'ready': true});
+    setState(() {
+      starting = true;
+    });
   }
 }
 

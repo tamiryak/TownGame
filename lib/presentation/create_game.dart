@@ -5,7 +5,7 @@ import 'package:town_game/core/current_user.dart';
 import 'package:town_game/core/di.dart';
 import 'game.dart';
 
-final GlobalKey<FormBuilderState> fbKey = GlobalKey<FormBuilderState>();
+GlobalKey<FormBuilderState> fbKey = GlobalKey<FormBuilderState>();
 DateTime loginClickTime;
 
 bool isRedundentClick(DateTime currentTime) {
